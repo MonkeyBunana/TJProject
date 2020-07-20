@@ -104,6 +104,33 @@ class DBPage:
             print(e)
             self.conn.rollback()
 
+    def selectReaderSex(self, value):
+        try:
+            sql = "SELECT bro, ren FROM tb_reader WHERE sex=?"
+            self.cursor.execute(sql, [value])
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(e)
+            self.conn.rollback()
+
+    def selectReaderDzdw(self, value):
+        try:
+            sql = "SELECT bro, ret, sex FROM tb_reader WHERE dzdw=?"
+            self.cursor.execute(sql, [value])
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(e)
+            self.conn.rollback()
+
+    def selectReaderZzm(self, value):
+        try:
+            sql = "SELECT bro, ret FROM tb_book WHERE zzm=?"
+            self.cursor.execute(sql, [value])
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(e)
+            self.conn.rollback()
+
     def selectTotal(self):
         try:
             sql = 'SELECT * FROM tb_total'
@@ -116,6 +143,18 @@ class DBPage:
     def selectBook(self):
         try:
             sql = 'SELECT * FROM tb_book'
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(e)
+            self.conn.rollback()
+
+    def selectBookFlh(self, value):
+        try:
+            if value == '总计':
+                sql = "SELECT bro, ret, ren FROM tb_book"
+            else:
+                sql = "SELECT bro, ret, ren FROM tb_book WHERE flh LIKE '"+value+"%'"
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except Exception as e:
@@ -150,9 +189,9 @@ class DBPage:
             self.conn.rollback()
 
 if __name__ == '__main__':
-    DBPage('book').createReader()
-    DBPage('book').createTotal()
-    DBPage('book').createBook()
+    # DBPage('book').createReader()
+    # DBPage('book').createTotal()
+    # DBPage('book').createBook()
     # a = [
     #     ('TJ1231', '{"1", "2", "3"}'),
     #     ('TJ4655', '{"4", "5"}')
@@ -163,3 +202,5 @@ if __name__ == '__main__':
     # print(DBPage("book").selectReader())
     # print(DBPage('book').selectTotal())
     # DBPage('book').deleteReader()
+    # print(DBPage('book').selectBookFlh('总计'))
+    print(DBPage('book').selectReaderZzm('张梦璐'))

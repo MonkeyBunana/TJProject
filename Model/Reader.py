@@ -23,7 +23,7 @@ class Reader:
         """
         l = list()
         # 获取随机值，插如 tb_reader 中
-        self.slp.addReader(self.ep.getRandomReaderID())
+        # self.slp.addReader(self.ep.getRandomReaderID())
         # requests 模拟接口必要参数
         method = 'POST'
         url = 'http://192.168.1.47:8080/service/api/e/flow/readerManager/readerManagerSave'
@@ -65,7 +65,7 @@ class Reader:
             self.rp.sendRequest(method=method, url=url, data=data)
         # 添加到数据库中
         self.slp.addReader(l)
-        self.slp.addTotal([(len(l), 0, 0, 0, self.rp.nowTime())])
+        self.slp.addTotal([(len(l), 0, 0, 0, str(self.rp.nowTime()))])
 
 
     def deleteReader(self):

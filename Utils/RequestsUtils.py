@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-”
+import datetime
 import time
 
 import requests
@@ -85,12 +86,19 @@ class RequestsPage:
                     s.add(t.strip().strip("'"))
         return s
 
-    def nowTime(self):
+    def nowTime(self, ty=None):
         """
         返回当前时间
-        :return: String
+        :param ty: 非必传，返回不同格式的时间；值为start/now
+        :return:String
         """
-        return str(time.strftime("%Y/%m/%d %H:%M:%S", time.localtime()))
+        today = datetime.date.today()
+        if ty == 'start':
+            return today.replace(month=1, day=1)
+        elif ty == 'end':
+            return today + datetime.timedelta(days=1)
+        else:
+            return today
 
     def modifyNum(self, setValue):
         """
@@ -127,6 +135,7 @@ class RequestsPage:
 
 
 if __name__ == '__main__':
+    print(RequestsPage().nowTime())
     # a = ("adad", "asdad", "ssfg", "asfhsof")
     # print(RequestsPage().randomValue(a))
-    RequestsPage().modifyTuples((123, 'DZ04234', "{'TJ00591', 'TJ00432', 'TJ00002', 'TJ00009', 'TJ00311', 'TJ00571', 'TJ00275', 'TJ00558', 'TJ00447', 'TJ00243', 'TJ00096'}"))
+    # RequestsPage().modifyTuples((123, 'DZ04234', "{'TJ00591', 'TJ00432', 'TJ00002', 'TJ00009', 'TJ00311', 'TJ00571', 'TJ00275', 'TJ00558', 'TJ00447', 'TJ00243', 'TJ00096'}"))

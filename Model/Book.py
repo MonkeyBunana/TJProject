@@ -230,7 +230,7 @@ class Book:
             int(tb[1]) + len(checkDoubleValue),
             tb[2],
             tb[3],
-            self.rp.nowTime()
+            str(self.rp.nowTime())
         ))
 
 
@@ -347,7 +347,7 @@ class Book:
             tb[1],
             tb[2] + count,
             tb[3],
-            self.rp.nowTime()
+            str(self.rp.nowTime())
         ))
 
     def renewBooks(self):
@@ -431,7 +431,7 @@ class Book:
             tb[1],
             tb[2],
             tb[3] + count,
-            self.rp.nowTime()
+            str(self.rp.nowTime())
         ))
 
     def allReturnBooks(self):
@@ -486,7 +486,7 @@ class Book:
                 tb[1],
                 tb[2] + tup[6],
                 tb[3],
-                self.rp.nowTime()
+                str(self.rp.nowTime())
             ))
             # 清空集合
             temp.clear()
