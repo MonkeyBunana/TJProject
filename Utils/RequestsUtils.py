@@ -27,7 +27,7 @@ class RequestsPage:
         :param args: Tuple
         :return: String
         """
-        return self.rd.choice(*args)
+        return self.rd.choice(args)
 
     def sendRequest(self, method, url, data=None):
         """
