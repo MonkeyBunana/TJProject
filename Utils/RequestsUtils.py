@@ -73,16 +73,17 @@ class RequestsPage:
                 break
         return l
 
-    def modifyTuples(self, *args):
+    def modifyTuples(self, *args, value=4):
         """
         处理从数据库中提取出的元祖值，返回一个集合
         :param args: Tuple
+        :param value: 默认取出数据库每一行的第5列，可以修改为其他列数
         :return: Set
         """
         s = set()
         for tup in args:
-            if tup[4] != "":
-                for t in tup[4].lstrip("{").rstrip("}").split(","):
+            if tup[value] != "":
+                for t in tup[value].lstrip("{").rstrip("}").split(","):
                     s.add(t.strip().strip("'"))
         return s
 

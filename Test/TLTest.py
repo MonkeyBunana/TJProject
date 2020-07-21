@@ -311,6 +311,82 @@ class LTTest(unittest.TestCase):
             num = num + int(data['borrowNumber'])
         self.assertEqual(res['data']['totalBorrow'][0], num)
 
+    def test_dzdqjycx_default(self):
+        """ 流通-读者当前借阅查询
+        每本书进行搜索，搜索的到就ok
+        :return:
+        """
+        for data in self.db.selectReader():
+            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjycx', {
+                'userToken': self.token,
+                'libid': self.libid,
+                'dzzhao': data[1],
+                'pageNumber': 1,
+                'pageSize': 50
+            }).json()
+            num = 0
+            for d in res['data']['dataList']:
+                num += 1
+                if d['tiaoma'] in data[4]:
+                    self.assertTrue(True)
+                else:
+                    self.assertTrue(False)
+            self.assertEqual(num, len(self.rp.modifyTuples(data)))
+
+    def test_dzdqjycx_total(self):
+        """ 流通-读者当前借阅查询
+        计算每个用户图书的数量，和总量进行比较
+        :return:
+        """
+        num = 0
+        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjycx', {
+            'userToken': self.token,
+            'libid': self.libid,
+            'pageNumber': 1,
+            'pageSize': 50
+        }).json()
+        for data in self.db.selectReader():
+            num = num + len(self.rp.modifyTuples(data))
+        self.assertEqual(num, int(res['data']['totalElements']))
+
+    def test_dzlsjycx_default(self):
+        """ 流通-读者历史借阅查询
+        每本书进行搜索，搜索的到就ok
+        :return:
+        """
+        for data in self.db.selectReader():
+            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjylscx', {
+                'userToken': self.token,
+                'libid': self.libid,
+                'dzzhao': data[1],
+                'pageNumber': 1,
+                'pageSize': 50
+            }).json()
+            print(res)
+            num = 0
+            for d in res['data']['dataList']:
+                num += 1
+                if d['tiaoma'] in data[5]:
+                    self.assertTrue(True)
+                else:
+                    self.assertTrue(False)
+            self.assertEqual(num, len(self.rp.modifyTuples(data, value=5)))
+
+    def test_dzlsjycx_total(self):
+        """ 流通-读者历史借阅查询
+        计算每个用户图书的数量，和总量进行比较
+        :return:
+        """
+        num = 0
+        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjylscx', {
+            'userToken': self.token,
+            'libid': self.libid,
+            'pageNumber': 1,
+            'pageSize': 50
+        }).json()
+        for data in self.db.selectReader():
+            num = num + len(self.rp.modifyTuples(data, value=5))
+        self.assertEqual(num, int(res['data']['totalElements']))
 
 if __name__ == '__main__':
     unittest.main()

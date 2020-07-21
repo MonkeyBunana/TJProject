@@ -20,7 +20,7 @@ class ElibPage:
         """
         method = 'POST'
         url = 'http://192.168.1.47:8080/service/api/p/login/userLogin'
-        data = {"loginName": "TJ", "loginPwd": "Td123456"}
+        data = {"loginName": "TJ", "loginPwd": "6Tet8CNiT2soE8BiYcXR%2FA%3D%3D"}
         res = self.rp.sendRequest(method=method, url=url, data=data)
         return dict(json.loads(res.text))['data']['userToken']
 
@@ -112,4 +112,4 @@ class ElibPage:
 
 
 if __name__ == '__main__':
-    ElibPage().getRandomReaderID()
+    ElibPage().getUserToken()
