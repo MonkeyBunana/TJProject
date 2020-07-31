@@ -2,15 +2,19 @@
 import json
 import random
 from Utils.RequestsUtils import RequestsPage
-from Utils.ReadUtils import ReadPage
 from Utils.SqlLiteUtils import DBPage
 
 class ElibPage:
 
     def __init__(self):
         self.rp = RequestsPage()
-        # self.rpp = ReadPage()
         self.slp = DBPage('book')
+
+    def getLoginMsg(self, Url, loginName, loginPwd):
+        return self.rp.sendRequest("POST", Url, {
+            'loginName': loginName,
+            'loginPwd': loginPwd
+        }).json()
 
 
     def getUserToken(self):
@@ -112,4 +116,4 @@ class ElibPage:
 
 
 if __name__ == '__main__':
-    ElibPage().getUserToken()
+    print(ElibPage().getUserToken())

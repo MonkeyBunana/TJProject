@@ -48,7 +48,7 @@ class DBPage:
             self.conn.commit()
         except Exception as e:
             print(e)
-            self.conn.rollback()
+            # self.conn.rollback()
 
     def addTotal(self, list):
         try:
@@ -115,7 +115,7 @@ class DBPage:
 
     def selectReaderDzdw(self, value):
         try:
-            sql = "SELECT bro, ret, sex FROM tb_reader WHERE dzdw=?"
+            sql = "SELECT bro, ret, sex, ren FROM tb_reader WHERE dzdw=?"
             self.cursor.execute(sql, [value])
             return self.cursor.fetchall()
         except Exception as e:

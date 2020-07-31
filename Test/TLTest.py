@@ -102,7 +102,7 @@ class LTTest(unittest.TestCase):
                 'jycs': 1,
                 'dzzhao': data[1]
             }).json()
-            self.assertEqual(res['data']['dataList'][0]['jieyuecs'], data[7])
+            self.assertEqual(res['data']['dataList'][0]['jieyuecs'], data[7] + data[9])
 
     def test_dzjhtj_default(self):
         """ 流通-读者借还统计
@@ -117,7 +117,7 @@ class LTTest(unittest.TestCase):
                 'pageSize': 50,
                 'dzzhao': data[1]
             }).json()
-            self.assertEqual(res['data']['page']['dataList'][0]['jieyuecs'], data[7])
+            self.assertEqual(res['data']['page']['dataList'][0]['jieyuecs'], data[7] + data[9])
             self.assertEqual(res['data']['page']['dataList'][0]['guihuancs'], data[8])
             self.assertEqual(res['data']['page']['dataList'][0]['xujiecs'], data[9])
 
@@ -136,7 +136,11 @@ class LTTest(unittest.TestCase):
                 'jycs': 1,
                 'ztming': data[1]
             }).json()
-            self.assertEqual(res['data']['dataList'][0]['jieyuecs'], data[7]+data[8]+data[9])
+            print(data)
+            print(res['data']['dataList'][0])
+            for r in res['data']['dataList']:
+                if r['ztming'] == data[1]:
+                    self.assertEqual(res['data']['dataList'][0]['jieyuecs'], data[7]+data[8])
 
     def test_wxjhtj_default(self):
         """ 流通-文献借还统计
@@ -165,7 +169,7 @@ class LTTest(unittest.TestCase):
             'pageSize': 15
         }).json()
         for data in res['data']['dataList']:
-            self.assertEqual(data['jieyuecs'], self.db.selectTotal()[1])
+            self.assertEqual(data['jieyuecs'], self.db.selectTotal()[1] + self.db.selectTotal()[3])
             self.assertEqual(data['guihuancs'], self.db.selectTotal()[2])
 
     def test_dzdwjhtj_default(self):
@@ -182,7 +186,7 @@ class LTTest(unittest.TestCase):
         for data in res['data']['dataList']:
             val_bro, val_ret = 0, 0
             for d in self.db.selectReaderDzdw(data['dzdw']):
-                val_bro = val_bro + d[0]
+                val_bro = val_bro + d[0] + d[3]
                 val_ret = val_ret + d[1]
             self.assertEqual(data['jieyuecs'], val_bro)
             self.assertEqual(data['guihuancs'], val_ret)
@@ -224,7 +228,7 @@ class LTTest(unittest.TestCase):
             bro_num, ret_num = 0, 0
             for d in self.db.selectReaderDzdw(data['readerUnit']):
                 if d[2] == data['readerGenderName']:
-                    bro_num = bro_num + d[0]
+                    bro_num = bro_num + d[0] + d[3]
                     ret_num = ret_num + d[1]
             self.assertEqual(data['brwNum'], bro_num)
             self.assertEqual(data['returnNum'], ret_num)
@@ -272,8 +276,10 @@ class LTTest(unittest.TestCase):
         }).json()
         man_num, famale_num = 0, 0
         for data in res_1['data']['dataList']:
+            print(data)
             man_num = man_num + int(data['manBorrwoNumber'])
             famale_num = famale_num + int(data['femaleBorrowNumber'])
+        print(res_2['data'])
         self.assertEqual(man_num, res_2['data']['manBorrow'])
         self.assertEqual(famale_num, res_2['data']['femaleBorrow'])
 
