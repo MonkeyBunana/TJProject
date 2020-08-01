@@ -16,7 +16,7 @@ class CirculationPage:
         pass
 
     def DocumentCirculation_Bro(self):
-        
+        pass
 
 if __name__ == '__main__':
     CirculationPage('pysyzx', '123456')
