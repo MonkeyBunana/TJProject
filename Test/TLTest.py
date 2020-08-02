@@ -14,15 +14,7 @@ class LTTest(unittest.TestCase):
         self.reader = Reader()
         self.db = DBPage('book')
         self.rp = RequestsPage()
-        self.ep = ElibPage()
-
-    def setUp(self) -> None:
-        self.token = self.ep.getUserToken()
-        self.libid = self.ep.getLibid()
-
-    def tearDown(self) -> None:
-        pass
-
+        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
 
     def test_lttj_default(self):
         """ 流通-流通统计
@@ -30,11 +22,11 @@ class LTTest(unittest.TestCase):
         :return:
         """
         # TODO: 1. 增加每本图书藏址到数据库中  2. 增加对藏址图书统计的测试
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/lttjList', {
-                'userToken': self.token,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/lttjList', {
+                'userToken': self.ep.getUserToken(),
                 'type': 1,
-                'cygid0': self.libid,
-                'cygid1': self.libid,
+                'cygid0': self.ep.getLibid(),
+                'cygid1': self.ep.getLibid(),
                 'timeType': 1,
                 'pageSize': 50,
                 'pageNumber': 1
@@ -47,11 +39,11 @@ class LTTest(unittest.TestCase):
         获取总的数据数量 与 tb_total的借/还/续相加 进行比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/ltxd', {
-            'userToken': self.token,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/ltxd', {
+            'userToken': self.ep.getUserToken(),
             'pageNumber': 1,
             'pageSize': 50,
-            'libId': self.libid
+            'libId': self.ep.getLibid()
         }).json()
         result = self.db.selectTotal()[1] + self.db.selectTotal()[2] + self.db.selectTotal()[3]
         self.assertEqual(res['data']['totalElements'], str(result))
@@ -62,11 +54,11 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectReader():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/ltxd', {
-                'userToken': self.token,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/ltxd', {
+                'userToken': self.ep.getUserToken(),
                 'pageNumber': 1,
                 'pageSize': 50,
-                'libId': self.libid,
+                'libId': self.ep.getLibid(),
                 'dzzhao': data[1]
             }).json()
             self.assertEqual(res['data']['totalElements'], str(data[7]+data[8]+data[9]))
@@ -78,11 +70,11 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectBook():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/ltxd', {
-                'userToken': self.token,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/ltxd', {
+                'userToken': self.ep.getUserToken(),
                 'pageNumber': 1,
                 'pageSize': 50,
-                'libId': self.libid,
+                'libId': self.ep.getLibid(),
                 'ztming': data[1]
             }).json()
             self.assertEqual(res['data']['totalElements'], str(data[7]+data[8]*2+data[9]))
@@ -93,9 +85,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectReader():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/dzjyphb', {
-                'userToken': self.token,
-                'libid': self.libid,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/dzjyphb', {
+                'userToken': self.ep.getUserToken(),
+                'libid': self.ep.getLibid(),
                 'renshu': 100,
                 'pageNumber': 1,
                 'pageSize': 50,
@@ -110,9 +102,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectReader():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/dzjhtj', {
-                'userToken': self.token,
-                'libid': self.libid,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/dzjhtj', {
+                'userToken': self.ep.getUserToken(),
+                'libid': self.ep.getLibid(),
                 'pageNumber': 1,
                 'pageSize': 50,
                 'dzzhao': data[1]
@@ -127,9 +119,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectBook():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/wxjyphb', {
-                'userToken': self.token,
-                'libid': self.libid,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/wxjyphb', {
+                'userToken': self.ep.getUserToken(),
+                'libid': self.ep.getLibid(),
                 'renshu': 100,
                 'pageNumber': 1,
                 'pageSize': 50,
@@ -147,9 +139,9 @@ class LTTest(unittest.TestCase):
         查询每个大类的借阅册次 与 tb_book的每个书目挑选相关类型相加 进行比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/wxjhtj', {
-            'userToken': self.token,
-            'libid': self.libid
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/wxjhtj', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid()
         }).json()
         for data in res['data']:
             val = 0
@@ -162,9 +154,9 @@ class LTTest(unittest.TestCase):
         因为只有一个读者类型，所以直接和 tb_total 的借阅数/归还数进行比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/dzlxjhtj', {
-            'userToken': self.token,
-            'libid': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/dzlxjhtj', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 15
         }).json()
@@ -177,9 +169,9 @@ class LTTest(unittest.TestCase):
         根据数据库中读者的读者单位全部相加 进行比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/dzdwjhtj', {
-            'userToken': self.token,
-            'libid': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/dzdwjhtj', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 15
         }).json()
@@ -201,9 +193,9 @@ class LTTest(unittest.TestCase):
             if data[5] == '':
                 break
             else:
-                res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/authorRank', {
-                    'userToken': self.token,
-                    'libId': self.libid,
+                res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/authorRank', {
+                    'userToken': self.ep.getUserToken(),
+                    'libId': self.ep.getLibid(),
                     'pageNumber': 1,
                     'pageSize': 50,
                     'equalType': 1,
@@ -218,9 +210,9 @@ class LTTest(unittest.TestCase):
         根据 selectReaderDzdw 方法，会返回读者借/还/性别的元祖，根据性别将借/还相添加比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/readerLabelCir', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/readerLabelCir', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 50
         }).json()
@@ -238,9 +230,9 @@ class LTTest(unittest.TestCase):
         根据 selectReaderSex 方法，会返回读者借/续的元祖，将借/续相添加比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/readerGenderBorrowList', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/readerGenderBorrowList', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'statisticalPeriod': 0,
             'pageNumber': 1,
             'pageSize': 50
@@ -261,16 +253,16 @@ class LTTest(unittest.TestCase):
         由于测试时合计小于月数量，故将月数量循环相加与合计相比较
         :return:
         """
-        res_1 = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/readerGenderBorrowList', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res_1 = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/readerGenderBorrowList', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'statisticalPeriod': 0,
             'pageNumber': 1,
             'pageSize': 50
         }).json()
-        res_2 = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/totalGenderBorrow', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res_2 = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/totalGenderBorrow', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 50
         }).json()
@@ -288,9 +280,9 @@ class LTTest(unittest.TestCase):
         获取合计数量和数据库 tb_book 借阅/续借相比较
         :return:
         """
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/timeBorrowList', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/timeBorrowList', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'date1': self.rp.nowTime('start'),
             'date2': self.rp.nowTime('end'),
             'time1': '00',
@@ -305,9 +297,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         num = 0
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/lttj/timeBorrowList', {
-            'userToken': self.token,
-            'libId': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/lttj/timeBorrowList', {
+            'userToken': self.ep.getUserToken(),
+            'libId': self.ep.getLibid(),
             'date1': self.rp.nowTime('start'),
             'date2': self.rp.nowTime('end'),
             'time1': '00',
@@ -323,9 +315,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectReader():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjycx', {
-                'userToken': self.token,
-                'libid': self.libid,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/ltcx/dzjycx', {
+                'userToken': self.ep.getUserToken(),
+                'libid': self.ep.getLibid(),
                 'dzzhao': data[1],
                 'pageNumber': 1,
                 'pageSize': 50
@@ -345,9 +337,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         num = 0
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjycx', {
-            'userToken': self.token,
-            'libid': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/ltcx/dzjycx', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 50
         }).json()
@@ -361,9 +353,9 @@ class LTTest(unittest.TestCase):
         :return:
         """
         for data in self.db.selectReader():
-            res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjylscx', {
-                'userToken': self.token,
-                'libid': self.libid,
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/ltcx/dzjylscx', {
+                'userToken': self.ep.getUserToken(),
+                'libid': self.ep.getLibid(),
                 'dzzhao': data[1],
                 'pageNumber': 1,
                 'pageSize': 50
@@ -384,15 +376,16 @@ class LTTest(unittest.TestCase):
         :return:
         """
         num = 0
-        res = self.rp.sendRequest('POST', 'http://192.168.1.47:8080/service/api/e/flow/ltcx/dzjylscx', {
-            'userToken': self.token,
-            'libid': self.libid,
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/ltcx/dzjylscx', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 50
         }).json()
         for data in self.db.selectReader():
             num = num + len(self.rp.modifyTuples(data, value=5))
         self.assertEqual(num, int(res['data']['totalElements']))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-”
 import datetime
-import time
-
 import requests
 import random
 import re
+
+from urllib3 import encode_multipart_formdata
 
 class RequestsPage:
 
@@ -21,14 +21,6 @@ class RequestsPage:
             "Connection": "keep-alive",
         }
 
-    def randomValue(self, *args):
-        """
-        元祖中获取任意值
-        :param args: Tuple
-        :return: String
-        """
-        return self.rd.choice(*args)
-
     def sendRequest(self, method, url, data=None):
         """
         发送 requests 不同类型的请求
@@ -42,8 +34,37 @@ class RequestsPage:
                 return self.re.get(url=url, data=data, headers=self.headers)
             if method == "POST":
                 return self.re.post(url=url, data=data, headers=self.headers)
+            if method == "POSTFILE":
+                data['file'] = ('征订书目列表.xls', open('D:\Cache\Dev\Python\TJProject\征订书目列表.xls', 'rb').read())
+                encode_data = encode_multipart_formdata(data)
+                data = encode_data[1]
+                self.headers['Content-Type'] = encode_data[0]
+
+                print(encode_data[0])
+                print(encode_data[1])
+
+                return self.re.post(url=url, data=data, headers=self.headers)
         except Exception as e:
             pass
+
+    def getRandomReaderID(self):
+        """
+        获取随机用户名
+        :return: List
+        """
+        name = set()
+        while len(name) < 20:
+            num = random.randint(1, 10000)
+            name.add("DZ" + str(num).zfill(5))
+        return list(name)
+
+    def randomValue(self, *args):
+        """
+        元祖中获取任意值
+        :param args: Tuple
+        :return: String
+        """
+        return self.rd.choice(*args)
 
     def matchNumber(self, str):
         """

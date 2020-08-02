@@ -23,6 +23,7 @@ class ReadPage:
             file_handle.write(n+'\n')
         file_handle.close()
 
+
 if __name__ == '__main__':
     a = ("ada", "asdada", "adadada", "dafaf", "asfda")
     ReadPage().write(a)

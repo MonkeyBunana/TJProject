@@ -2,101 +2,173 @@
 import json
 import random
 from Utils.RequestsUtils import RequestsPage
-from Utils.SqlLiteUtils import DBPage
 
 class ElibPage:
 
-    def __init__(self):
+    def __init__(self, loginName, loginPwd):
         self.rp = RequestsPage()
-        self.slp = DBPage('book')
 
-    def getLoginMsg(self, Url, loginName, loginPwd):
-        return self.rp.sendRequest("POST", Url, {
+        self.baseUrl = 'http://183.6.161.170:8888'
+        self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
             'loginName': loginName,
             'loginPwd': loginPwd
         }).json()
+        self.gysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {
+            'userToken': self.getUserToken(),
+            'flag': 1,
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.ltlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.czId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {
+            'userToken': self.getUserToken(),
+            'state': -1,
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.yslxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {
+            'userToken': self.getUserToken(),
+            'flag': 0,
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.batchId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {
+            'userToken': self.getUserToken(),
+            'flag': 1,
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'batchStatus': '正常',
+            'libId': self.getLibid()
+        }).json()
+        self.registerPlaceId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        self.marcFBId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/marcFb', {
+            'userToken': self.getUserToken(),
+            'libId': self.getLibid()
+        }).json()
+        self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
+            'userToken': self.getUserToken()
+        }).json()
 
+    def getUrl(self):
+        """
+        获取 baseUrl
+        :return: String
+        """
+        return self.baseUrl
 
     def getUserToken(self):
         """
         获取 token
         :return: String
         """
-        method = 'POST'
-        url = 'http://192.168.1.47:8080/service/api/p/login/userLogin'
-        data = {"loginName": "TJ", "loginPwd": "6Tet8CNiT2soE8BiYcXR%2FA%3D%3D"}
-        res = self.rp.sendRequest(method=method, url=url, data=data)
-        return dict(json.loads(res.text))['data']['userToken']
-
-    def getRandomReaderID(self):
-        """
-        获取随机用户名
-        :return: List
-        """
-        name = set()
-        while len(name) < 20:
-            num = random.randint(1, 10000)
-            name.add("DZ" + str(num).zfill(5))
-        return list(name)
+        return self.loginMsg['data']['userToken']
 
     def getLibid(self):
         """
         获取馆ID
         :return: String
         """
-        return 'a4854ce9259f465ab6f32ad296698eff'
+        return self.loginMsg['data']['user']['libId']
 
     def getGysid(self):
         """
-        获取供应商ID
+        获取供应商ID （暂时先只取第一个供应商）
         :return: String
         """
-        return 'e3939d11e03b4471bd5662cb2798c11e'
+        return self.gysId['data']['dataList'][0]['gysId']
 
     def getLtlxid(self):
         """
-        获取流通类型ID
+        获取流通类型ID （暂时先只取第一个流通类型）
         :return: String
         """
-        return 'bca922ec5d204407a35730e8b9800004'
+        return self.ltlxId['data']['dataList'][0]['ltlxid']
 
     def getCzid(self):
         """
         获取藏址ID
         :return: Tuple
         """
-        czid = ('05e4efc8f0b44bb9b7030fb4fafd1495', '1bf1f8b6fd0645bd855d8532d9fe3fc1')
-        return czid
+        czList = list()
+        for cz in self.czId['data']['dataList']:
+            czList.append(cz['czid'])
+        return tuple(czList)
 
     def getYsuanid(self):
         """
-        获取预算ID
+        获取预算ID  （暂时先只取第一个预算）
         :return: String
         """
-        return '8f840e57daeb4f9c8b5ab2f1288e5800'
+        return self.yslxId['data']['dataList'][0]['yslxid']
 
     def getBatchid(self):
         """
         获取编目批次ID
         :return: Tuple
         """
-        batchid = ('e04407f77e08484d895c550df3443b08', 'd2a406800e8747b192dcdc1a802ef3f3')
-        return batchid
+        batchList = list()
+        for batch in self.batchId['data']['dataList']:
+            batchList.append(batch['batchId'])
+        return tuple(batchList)
 
     def getRegisterPlaceId(self):
         """
         获取办证地点ID
         :return: Tuple
         """
-        registerPlaceId = ("bb932be5cc0a4a2e980d06dfc6443e36", "4c5c556472d3438fb4ba6d7800d59de1")
-        return registerPlaceId
+        registerPlaceList = list()
+        for registerPlace in self.registerPlaceId['data']['dataList']:
+            registerPlaceList.append(registerPlace['registerPlaceId'])
+        return tuple(registerPlaceList)
 
-    def getDzlxid(self):
+    def getDzlxid(self, ty=None):
         """
         获取读者类型
+        :return: Tuple / String
+        """
+        dzlxList = list()
+        if ty == 'more':
+            for i in self.dzlxId['data']['dataList']:
+                    dzlxList.append(i['dzlxid'])
+            return tuple(dzlxList)
+        else:
+            return self.dzlxId['data']['dataList'][0]['dzlxid']
+
+    def getFblxid(self):
+        """
+        获取分编类型
         :return: String
         """
-        return 'c6f1bc225ca8433ab0dc07d1981532b1'
+        return self.marcFBId['data']['list'][0]['marcfbid']
+
+    def getZdpcid(self):
+        """
+        获取征订目录
+        :return: Tuple
+        """
+        zdpcList = list()
+        for i in self.zdpcId['data']:
+            zdpcList.append(i['zdpcid'])
+        return tuple(zdpcList)
 
     def getXingbie(self):
         """
@@ -114,6 +186,5 @@ class ElibPage:
         return dzdw
 
 
-
 if __name__ == '__main__':
-    print(ElibPage().getUserToken())
+    print(ElibPage('zhonglilong', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D').getDzlxid('more'))
