@@ -8,9 +8,13 @@ class InterviewPage:
 
     def __init__(self):
         self.rp = RequestsPage()
-        self.ep = ElibPage('zhonglilong', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
 
     def subscriptionBooksImport(self):
+        """
+        征订书目导入功能
+        :return:
+        """
         # TODO 上传文件传值不正确
         return self.rp.sendRequest('FILE', self.ep.getUrl() + '/service/api/e/interview/file/zdsmI', {
             'Content-Disposition: form-data; name="%s"; filename="%s" Content-Type:%s\r\n' % ('excel', 'list.xls', 'application/vnd.ms-excel'): 'file',
@@ -18,6 +22,10 @@ class InterviewPage:
         })
 
     def subscriptionBooks(self):
+        """
+        征订书目预订功能
+        :return:
+        """
         # TODO 流程复杂，稍后实现
         # 先在 预订单管理 设置第一个为工作预定单
         self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/work/save', {
@@ -26,6 +34,10 @@ class InterviewPage:
         })
 
     def directSubscription(self):
+        """
+        直接预订功能
+        :return:
+        """
         # 先在 预订单管理 设置第一个为工作预定单
         self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/work/save', {
             'userToken': self.ep.getUserToken(),
@@ -67,6 +79,10 @@ class InterviewPage:
         return result['message']  # 操作成功!  已超出预算金额，不能预订！
 
     def subscriptionVerify(self):
+        """
+        预订验收功能
+        :return:
+        """
         # 先在 验收单管理 设置第一个为工作验收单
         self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/work/save', {
             'userToken': self.ep.getUserToken(),
@@ -123,5 +139,60 @@ class InterviewPage:
         }).json()
         return result['message']
 
+    def directVerify(self):
+        """
+        快捷验收功能
+        :return:
+        """
+        # 先在 验收单管理 设置第一个为工作验收单
+        self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/work/save', {
+            'userToken': self.ep.getUserToken(),
+            'yspcid': self.ep.getYsd()[0]
+        })
+        # 获取图书信息
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/yd/searchBook', {
+            'userToken': self.ep.getUserToken(),
+            'pageNumber': 16019,
+            'pageSize': 50,
+            'flag': 1
+        }).json()
+        # 获取索书号
+        r = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/yd/searchBookByMarcid', {
+            'userToken': self.ep.getUserToken(),
+            'marcid': res['data']['dataList'][0]['marcid']
+        }).json()
+        print(r['data']['sshao'])
+        # 验收
+        numList = list()
+        for i in range(res['data']['dataList'][0]['fuben']+1):
+            numDict = dict()
+            numDict['barcode'] = "TS" + str(random.randint(1, 10000)).zfill(5)
+            numDict['libId'] = self.ep.getLibid()
+            numDict['czId'] = self.ep.getCzid()[0]
+            numDict['ltlxId'] = self.ep.getLtlxid()
+            numList.append(numDict)
+
+        result = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/ys/smSave', {
+            'userToken': self.ep.getUserToken(),
+            'marcid': res['data']['dataList'][0]['marcid'],
+            'yslxing': '直接验收',
+            'yspcid': self.ep.getYsd()[0],
+            'collectionDtos': json.dumps(numList),
+            'yjhbid': self.ep.getHbList('CNY'),
+            'yuanjia': r['data']['jge'],
+            'cejia': r['data']['jge'],
+            'ydlaiyuan': '订购',
+            'ydhbid': self.ep.getHbList('CNY'),
+            'jiage': r['data']['jge'],
+            'taojia': r['data']['jge'],
+            'jzleixing': '纸张',
+            'zdfangshi': '平装',
+            'juance': 1,
+            'fuben': res['data']['dataList'][0]['fuben']+1,
+            'sshao': r['data']['sshao'],
+        }).json()
+        return result['message']
+
+
 if __name__ == '__main__':
-    print(InterviewPage().subscriptionVerify())
+    print(InterviewPage().directVerify())

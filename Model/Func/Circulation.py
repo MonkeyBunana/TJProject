@@ -46,7 +46,7 @@ class CirculationPage:
     def getReaderForAdd(self):
         """
         创建读者
-        :return: String
+        :return: Tuple
         """
         readerList = list()
         for n in self.rp.getRandomReaderID():
@@ -85,6 +85,12 @@ class CirculationPage:
 
 
     def operateBook(self, reader, state):
+        """
+        借书、还书、续借功能
+        :param reader: 读者
+        :param state: 借 / 续 / 还
+        :return: String
+        """
         res_sm = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/catalog/catalogue/list', {
             'userToken': self.ep.getUserToken(),
             'libid': self.ep.getLibid(),

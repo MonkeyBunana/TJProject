@@ -8,7 +8,7 @@ class ElibPage:
     def __init__(self, loginName, loginPwd):
         self.rp = RequestsPage()
 
-        self.baseUrl = 'http://192.168.1.47:8080/'
+        self.baseUrl = 'http://183.6.161.170:8888/'
         self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
             'loginName': loginName,
             'loginPwd': loginPwd
