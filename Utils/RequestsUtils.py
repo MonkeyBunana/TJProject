@@ -34,18 +34,15 @@ class RequestsPage:
                 return self.re.get(url=url, data=data, headers=self.headers)
             if method == "POST":
                 return self.re.post(url=url, data=data, headers=self.headers)
-            if method == "POSTFILE":
-                data['file'] = ('征订书目列表.xls', open('D:\Cache\Dev\Python\TJProject\征订书目列表.xls', 'rb').read())
+            if method == "FILE":
+                data['file'] = ('list.xls', open('D:\Cache\Project\TJProject\list.xls', 'rb').read())
                 encode_data = encode_multipart_formdata(data)
-                data = encode_data[1]
-                self.headers['Content-Type'] = encode_data[0]
+                data = encode_data[0]
+                self.headers['Content-Type'] = encode_data[1]
 
-                print(encode_data[0])
-                print(encode_data[1])
-
-                return self.re.post(url=url, data=data, headers=self.headers)
+                return self.re.post(url=url, data=data, headers=self.headers, verify=False)
         except Exception as e:
-            pass
+            print(e)
 
     def getRandomReaderID(self):
         """

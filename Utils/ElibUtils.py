@@ -8,7 +8,7 @@ class ElibPage:
     def __init__(self, loginName, loginPwd):
         self.rp = RequestsPage()
 
-        self.baseUrl = 'http://183.6.161.170:8888'
+        self.baseUrl = 'http://192.168.1.47:8080/'
         self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
             'loginName': loginName,
             'loginPwd': loginPwd
@@ -67,6 +67,23 @@ class ElibPage:
         self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
             'userToken': self.getUserToken()
         }).json()
+        self.ydd = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {
+            'userToken': self.getUserToken(),
+            'pageNumber': 1,
+            'pageSize': 50,
+            'flag': 1
+        }).json()
+        self.ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {
+            'userToken': self.getUserToken(),
+            'pageNumber': 1,
+            'pageSize': 50,
+            'flag': 1
+        }).json()
+        self.hb = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/hbList', {
+            'userToken': self.getUserToken(),
+            'libId': self.getLibid()
+        }).json()
+
 
     def getUrl(self):
         """
@@ -169,6 +186,47 @@ class ElibPage:
         for i in self.zdpcId['data']:
             zdpcList.append(i['zdpcid'])
         return tuple(zdpcList)
+
+    def getYdd(self):
+        """
+        获取预定单
+        :return: Tuple
+        """
+        yddList = list()
+        for i in self.ydd['data']['dataList']:
+            yddList.append(i['ydpcid'])
+        return tuple(yddList)
+
+    def getYsd(self):
+        """
+        获取验收单
+        :return: Tuple
+        """
+        ysdList = list()
+        for i in self.ysd['data']['dataList']:
+            ysdList.append(i['yspcid'])
+        return tuple(ysdList)
+
+    def getZdsmReserve(self, marcid):
+        """
+        征订书目-跳转预订
+        参数传递： 征订批次->预订（zdpcid,zdsmid）。直接预订（marcid）
+        :param marcid:
+        :return: req(<Response [200]>)
+        """
+        return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
+            'userToken': self.getUserToken(),
+            'marcid': marcid
+        }).json()
+
+    def getHbList(self, hbcode):
+        """
+        货币列表 CNY
+        :return: String
+        """
+        for i in self.hb['data']:
+            if i['hbcode'] == hbcode:
+                return i['hbid']
 
     def getXingbie(self):
         """
