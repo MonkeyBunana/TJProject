@@ -34,12 +34,14 @@ class RequestsPage:
                 return self.re.get(url=url, data=data, headers=self.headers)
             if method == "POST":
                 return self.re.post(url=url, data=data, headers=self.headers)
+            if method == "JSON":
+                self.headers['Content-Type'] = 'application/json'
+                return self.re.post(url=url, data=data, headers=self.headers)
             if method == "FILE":
                 data['file'] = ('list.xls', open('D:\Cache\Project\TJProject\list.xls', 'rb').read())
                 encode_data = encode_multipart_formdata(data)
                 data = encode_data[0]
                 self.headers['Content-Type'] = encode_data[1]
-
                 return self.re.post(url=url, data=data, headers=self.headers, verify=False)
         except Exception as e:
             print(e)
