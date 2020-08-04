@@ -7,7 +7,7 @@ class CirculationPage:
 
     def __init__(self):
         self.rp = RequestsPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%252FA%253D%253D')
 
 
     def BRRManage(self):
