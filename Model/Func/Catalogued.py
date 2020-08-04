@@ -9,7 +9,7 @@ class CataloguedPage:
         self.rp = RequestsPage()
         self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
 
-    def CXBMManage(self):
+    def CataloguedForQuery(self):
         """
         编目管理书目列表功能验证
         :return: None
@@ -28,7 +28,7 @@ class CataloguedPage:
         else:
             print("编目管理书目列表查询出错")
 
-    def XZBMManage(self):
+    def CataloguedForAdd(self):
         """
         新增编目功能验证
         :return: marctyid  书目编号，定位要编目的书目记录
@@ -85,7 +85,7 @@ class CataloguedPage:
         else:
             print("新增编目出错")
 
-    def XGBMManage(self, cata):
+    def CataloguedForMod(self, cata):
         """
         修改编目功能验证
         marctyid:书目编号，定位要编目的书目记录
@@ -142,7 +142,7 @@ class CataloguedPage:
         else:
             print("修改编目出错")
 
-    def SCBMManage(self, cata):
+    def CataloguedForDel(self, cata):
         """
         删除编目功能验证
         marctyid:书目编号，定位要编目的书目记录
@@ -161,7 +161,7 @@ class CataloguedPage:
 
 
 if __name__ == '__main__':
-    # CataloguedPage().CXBMManage()  # 编目管理书目列表功能验证
-    cata = CataloguedPage().XZBMManage()  # 新增编目管理书目功能验证
-    CataloguedPage().XGBMManage(cata)  # 修改编目管理书目功能验证
-    CataloguedPage().SCBMManage(cata)  # 删除编目管理书目功能验证
+    CataloguedPage().CataloguedForQuery()  # 编目管理书目列表功能验证
+    cata = CataloguedPage().CataloguedForAdd()  # 新增编目管理书目功能验证
+    CataloguedPage().CataloguedForMod(cata)  # 修改编目管理书目功能验证
+    CataloguedPage().CataloguedForDel(cata)  # 删除编目管理书目功能验证

@@ -10,7 +10,7 @@ class PeriodicalPage:
         self.rp = RequestsPage()
         self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
 
-    def CXQKManage(self):
+    def PeriodicalForQuery(self):
         """
         查询期刊书目列表功能验证
         :return: None
@@ -28,7 +28,7 @@ class PeriodicalPage:
         else:
             print("期刊书目列表查询成功")
 
-    def XZQKManage(self):
+    def PeriodicalForAdd(self):
         """
         新增期刊功能验证
         :return: None
@@ -87,7 +87,7 @@ class PeriodicalPage:
         else:
             print("新增期刊出错")
 
-    def XGQKManage(self, cata):
+    def PeriodicalForMod(self, cata):
         """
         修改期刊功能验证
         marctyid:书目编号，定位要编目的书目记录
@@ -145,7 +145,7 @@ class PeriodicalPage:
         else:
             print("修改期刊出错")
 
-    def SCQKManage(self, cata):
+    def PeriodicalForDel(self, cata):
         """
         删除期刊功能验证
         marctyid:书目编号，定位要编目的书目记录
@@ -163,7 +163,7 @@ class PeriodicalPage:
 
 
 if __name__ == '__main__':
-    PeriodicalPage().CXQKManage()  # 期刊书目列表功能验证
-    cata = PeriodicalPage().XZQKManage()  # 新增期刊功能验证
-    PeriodicalPage().XGQKManage(cata)  # 修改期刊功能验证
-    PeriodicalPage().SCQKManage(cata)  # 删除期刊功能验证
+    PeriodicalPage().PeriodicalForQuery()  # 期刊书目列表功能验证
+    cata = PeriodicalPage().PeriodicalForAdd()  # 新增期刊功能验证
+    PeriodicalPage().PeriodicalForMod(cata)  # 修改期刊功能验证
+    PeriodicalPage().PeriodicalForDel(cata)  # 删除期刊功能验证
