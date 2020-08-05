@@ -5,9 +5,17 @@ from Utils.ElibUtils import ElibPage
 
 class WebopacPage:
 
-    def __init__(self):
+    def __init__(self, username, userpwd):
         self.rp = RequestsPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage(username, userpwd)
+
+
+    def opacManage(self):
+        print(self.simpleSearch())
+        print(self.advanceSearch())
+        # print(self.opacReaderLogin())
+
+
 
     def simpleSearch(self, searchValue=None, searchItem='ztming', size=10, current=1, sortValue=0,
                      isBrwNum=0, haveCollection=1, sortField='cbYear', cbYear=None, cbYear2=None,
@@ -50,9 +58,9 @@ class WebopacPage:
             'subCategory': subCategory
         }).json()
         if res['message'] == '操作成功':
-            return res['data']['page']['dataList']
+            print(res['data']['page']['dataList'])
         else:
-            return '查询失败'
+            print('查询失败')
 
     def advanceSearch(self, size=10, current=1, sortValue=0, isBrwNum=0, haveCollection=1, sortField='cbYear',
                       cbYear=None, cbYear2=None, leixing=None, classify=None, category=None, subCategory=None,
@@ -109,9 +117,9 @@ class WebopacPage:
             'assemblyType2': assemblyType2
         }).json()
         if res['message'] == '操作成功':
-            return res['data']['page']['dataList']
+            print(res['data']['page']['dataList'])
         else:
-            return '查询失败'
+            print('查询失败')
 
     def opacReaderLogin(self, loginName, loginPwd):
         # 获取读者token
@@ -126,7 +134,7 @@ class WebopacPage:
         r2 = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/opac/book/list/nowcheckout', {
             'readerToken': res['data']['readerToken']
         }).json()
-        return r1
+        print(r1)
 
 
 if __name__ == '__main__':

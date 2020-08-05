@@ -5,9 +5,9 @@ from Utils.ElibUtils import ElibPage
 
 class CirculationPage:
 
-    def __init__(self):
+    def __init__(self, username, userpwd):
         self.rp = RequestsPage()
-        self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%252FA%253D%253D')
+        self.ep = ElibPage(username, userpwd)
 
 
     def BRRManage(self):
@@ -39,8 +39,20 @@ class CirculationPage:
             # 'readerType': i
         }).json()
         for data in res['data']['dataList']:
-            readerList.append(data['dzzhao'])
-            # break
+            isOverTime = False
+            # 判断是否超借
+            r = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/curBro', {
+                'userToken': self.ep.getUserToken(),
+                'readerBarcode': data['dzzhao']
+            }).json()
+            if len(r['data']) == 0:
+                readerList.append(data['dzzhao'])
+                break
+            # for d in r['data']:
+            #     if d['jyztai'] == '超期':
+            #         isOverTime = True
+            #         break
+            # if isOverTime is False:
         return tuple(readerList)
 
     def getReaderForAdd(self):
@@ -132,7 +144,8 @@ class CirculationPage:
                         }).json()
                         return retResult['message']  # message=还书成功！
                     else:
-                        print('数据错误')
+                        # print('数据错误')
+                        pass
 
 
 

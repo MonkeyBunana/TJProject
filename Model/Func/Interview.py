@@ -6,9 +6,18 @@ from Utils.ElibUtils import ElibPage
 
 class InterviewPage:
 
-    def __init__(self):
+    def __init__(self, username, userpwd):
         self.rp = RequestsPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage(username, userpwd)
+
+
+    def ZDManage(self):
+        # print(self.subscriptionBooksImport())
+        print(self.subscriptionBooks())
+        print(self.directSubscription())
+        print(self.subscriptionVerify())
+        print(self.directVerify())
+
 
     def subscriptionBooksImport(self):
         """
@@ -78,7 +87,7 @@ class InterviewPage:
             'gysCode': yd['data'][0]['gysCode'],
             'ydleixing': '征订预订'
         }).json()
-        return result['message']  # 操作成功!
+        print(result['message'])  # 操作成功!
 
     def directSubscription(self):
         """
@@ -123,7 +132,7 @@ class InterviewPage:
             'gysCode': r['data']['gysCode'],
             'ydleixing': '直接预订'
         }).json()
-        return result['message']  # 操作成功!  已超出预算金额，不能预订！
+        print(result['message'])  # 操作成功!  已超出预算金额，不能预订！
 
     def subscriptionVerify(self):
         """
@@ -184,7 +193,7 @@ class InterviewPage:
             'ydsmid': res['data']['dataList'][0]['ydsmid'],
             'ydjge': res['data']['dataList'][0]['jiage']
         }).json()
-        return result['message']
+        print(result['message'])
 
     def directVerify(self):
         """
@@ -238,7 +247,7 @@ class InterviewPage:
             'fuben': res['data']['dataList'][0]['fuben']+1,
             'sshao': r['data']['sshao'],
         }).json()
-        return result['message']
+        print(result['message'])
 
 
 if __name__ == '__main__':
