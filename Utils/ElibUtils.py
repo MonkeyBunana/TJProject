@@ -1,88 +1,96 @@
 # -*- coding: utf-8 -*-”
-import json
 import random
 from Utils.RequestsUtils import RequestsPage
+from Utils.AESUtils import AesPage
 
 class ElibPage:
 
-    def __init__(self, loginName, loginPwd):
+    def __init__(self, loginName, loginPwd, isAes='yes'):
         self.rp = RequestsPage()
 
-        self.baseUrl = 'http://183.6.161.170:8888/'
-        self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
-            'loginName': loginName,
-            'loginPwd': loginPwd
-        }).json()
-        self.gysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {
-            'userToken': self.getUserToken(),
-            'flag': 1,
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.ltlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {
-            'userToken': self.getUserToken(),
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.czId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {
-            'userToken': self.getUserToken(),
-            'state': -1,
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.yslxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {
-            'userToken': self.getUserToken(),
-            'flag': 0,
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.batchId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {
-            'userToken': self.getUserToken(),
-            'flag': 1,
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'batchStatus': '正常',
-            'libId': self.getLibid()
-        }).json()
-        self.registerPlaceId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {
-            'userToken': self.getUserToken(),
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {
-            'userToken': self.getUserToken(),
-            'pageSize': 1000,
-            'pageNumber': 1,
-            'libId': self.getLibid()
-        }).json()
-        self.marcFBId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/marcFb', {
-            'userToken': self.getUserToken(),
-            'libId': self.getLibid()
-        }).json()
-        self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
-            'userToken': self.getUserToken()
-        }).json()
-        self.ydd = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {
-            'userToken': self.getUserToken(),
-            'pageNumber': 1,
-            'pageSize': 50,
-            'flag': 1
-        }).json()
-        self.ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {
-            'userToken': self.getUserToken(),
-            'pageNumber': 1,
-            'pageSize': 50,
-            'flag': 1
-        }).json()
-        self.hb = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/hbList', {
-            'userToken': self.getUserToken(),
-            'libId': self.getLibid()
-        }).json()
+        self.baseUrl = 'http://192.168.1.120:8080'
+        if isAes == 'yes':
+            self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
+                'loginName': loginName,
+                'loginPwd': AesPage().AES_encrypt(loginPwd)
+            }).json()
+        else:
+            self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
+                'loginName': loginName,
+                'loginPwd': loginPwd
+            }).json()
+
+        if self.getLoginMsg()['code'] == 0:
+            self.gysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {
+                'userToken': self.getUserToken(),
+                'flag': 1,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            self.ltlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {
+                'userToken': self.getUserToken(),
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            self.czId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {
+                'userToken': self.getUserToken(),
+                'state': -1,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            self.yslxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {
+                'userToken': self.getUserToken(),
+                'flag': 0,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            self.batchId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {
+                'userToken': self.getUserToken(),
+                'flag': 1,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'batchStatus': '正常',
+                'libId': self.getLibid()
+            }).json()
+            self.registerPlaceId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {
+                                                           'userToken': self.getUserToken(),
+                                                           'pageSize': 1000,
+                                                           'pageNumber': 1,
+                                                           'libId': self.getLibid()
+                                                       }).json()
+            self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {
+                                                  'userToken': self.getUserToken(),
+                                                  'pageSize': 1000,
+                                                  'pageNumber': 1,
+                                                  'libId': self.getLibid()
+                                              }).json()
+            self.marcFBId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/marcFb', {
+                'userToken': self.getUserToken(),
+                'libId': self.getLibid()
+            }).json()
+            self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
+                'userToken': self.getUserToken()
+            }).json()
+            self.ydd = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {
+                'userToken': self.getUserToken(),
+                'pageNumber': 1,
+                'pageSize': 50,
+                'flag': 1
+            }).json()
+            self.ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {
+                'userToken': self.getUserToken(),
+                'pageNumber': 1,
+                'pageSize': 50,
+                'flag': 1
+            }).json()
+            self.hb = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/hbList', {
+                'userToken': self.getUserToken(),
+                'libId': self.getLibid()
+            }).json()
 
 
     def getUrl(self):
@@ -105,6 +113,13 @@ class ElibPage:
         :return: String
         """
         return self.loginMsg['data']['user']['libId']
+
+    def getLoginMsg(self):
+        """
+        获取登录用户信息
+        :return:
+        """
+        return self.loginMsg
 
     def getGysid(self):
         """
@@ -207,17 +222,26 @@ class ElibPage:
             ysdList.append(i['yspcid'])
         return tuple(ysdList)
 
-    def getZdsmReserve(self, marcid):
+    def getZdsmReserve(self, marcid=None, zdpcid=None, zdsmid=None):
         """
         征订书目-跳转预订
         参数传递： 征订批次->预订（zdpcid,zdsmid）。直接预订（marcid）
-        :param marcid:
+        :param zdsmid:  征订书目id
+        :param zdpcid:  征订批次id
+        :param marcid:  marcid
         :return: req(<Response [200]>)
         """
-        return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
+        if zdpcid is None and zdsmid is None and marcid is not None:
+            return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
             'userToken': self.getUserToken(),
             'marcid': marcid
         }).json()
+        if zdpcid is not None and zdsmid is not None and marcid is None:
+            return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
+                'userToken': self.getUserToken(),
+                'zdpcid': zdpcid,
+                'zdsmid': zdsmid
+            }).json()
 
     def getHbList(self, hbcode):
         """
@@ -242,6 +266,7 @@ class ElibPage:
         """
         dzdw = ("asd1", "asd2", "asd3")
         return dzdw
+
 
 
 if __name__ == '__main__':

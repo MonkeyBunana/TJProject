@@ -26,12 +26,59 @@ class InterviewPage:
         征订书目预订功能
         :return:
         """
-        # TODO 流程复杂，稍后实现
         # 先在 预订单管理 设置第一个为工作预定单
         self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/work/save', {
             'userToken': self.ep.getUserToken(),
             'ydpcid': self.ep.getYdd()[0]
         })
+        # 获取征订目录列表
+        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/zdpc/search', {
+            'userToken': self.ep.getUserToken(),
+            'pageNumber': 1,
+            'pageSize': 50
+        }).json()
+        # 获取图书信息
+        r = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/zdsm/search', {
+            'userToken': self.ep.getUserToken(),
+            'zdpcid': res['data']['dataList'][0]['zdpcid'],
+            'pageNumber': 1,
+            'pageSize': 50
+        }).json()
+        # 判断图书信息中价格是否存在
+        price = 0
+        if 'jge' in dict(r):
+            price = int(self.rp.matchNumber(r['data']['page']['dataList'][0]['jge']))
+        # 获取预订单信息
+        yd = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/yd/pcList', {
+            'userToken': self.ep.getUserToken()
+        }).json()
+        # 预订
+        result = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/yd/smSave', {
+            'userToken': self.ep.getUserToken(),
+            'cygName': yd['data'][0]['cygName'],
+            'ysName': yd['data'][0]['ysName'],
+            'marcid': r['data']['page']['dataList'][0]['marcid'],
+            'gysName': yd['data'][0]['gysName'],
+            'ydbhao': '',
+            'ydpcid': yd['data'][0]['ydpcid'],
+            'ceshu': 1,
+            'ydlaiyuan': '订购',
+            'yjhbid': self.ep.getHbList('CNY'),
+            'jzleixing': '纸张',
+            'yuanjia': price,
+            'zdfangshi': '平装',
+            'ydhbid': self.ep.getHbList('CNY'),
+            'juance': 1,
+            'jiage': price,
+            'fuzhu': '',
+            'zdpcdm': res['data']['dataList'][0]['zdpcdm'],
+            'ydpcdm': self.ep.getZdsmReserve(zdpcid=res['data']['dataList'][0]['zdpcid'], zdsmid=r['data']['page']['dataList'][0]['zdsmid']),
+            'ysCode': yd['data'][0]['ysCode'],
+            'zdpcid': self.ep.getZdpcid()[0],
+            'gysCode': yd['data'][0]['gysCode'],
+            'ydleixing': '征订预订'
+        }).json()
+        return result['message']  # 操作成功!
 
     def directSubscription(self):
         """
@@ -51,7 +98,7 @@ class InterviewPage:
             'flag': 1
         }).json()
         # 征订书目-直接预订
-        r = self.ep.getZdsmReserve(res['data']['dataList'][0]['marcid'])
+        r = self.ep.getZdsmReserve(marcid=res['data']['dataList'][0]['marcid'])
         # 预定
         result = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/interview/yd/smSave', {
             'userToken': self.ep.getUserToken(),
@@ -195,4 +242,4 @@ class InterviewPage:
 
 
 if __name__ == '__main__':
-    print(InterviewPage().directVerify())
+    print(InterviewPage().subscriptionBooks())
