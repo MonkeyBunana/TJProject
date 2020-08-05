@@ -100,6 +100,13 @@ class ElibPage:
         """
         return self.baseUrl
 
+    def getUsercode(self):
+        """
+        获取 baseUrl
+        :return: String
+        """
+        return self.loginMsg['data']['user']['usercode']
+
     def getUserToken(self):
         """
         获取 token
