@@ -10,7 +10,17 @@ class CirculationPage:
         self.ep = ElibPage(username, userpwd)
 
 
-    def BRRManage(self):
+    def BRRManage_1(self):
+        """
+        借还续功能验证
+        :return: None
+        """
+        for r2 in self.getReaderForAdd():
+            print(self.operateBook(r2, '借'))
+            print(self.operateBook(r2, '续'))
+            print(self.operateBook(r2, '还'))
+
+    def BRRManage_2(self):
         """
         借还续功能验证
         :return: None
@@ -19,11 +29,6 @@ class CirculationPage:
             print(self.operateBook(r1, '借'))
             print(self.operateBook(r1, '续'))
             print(self.operateBook(r1, '还'))
-
-        for r2 in self.getReaderForAdd():
-            print(self.operateBook(r2, '借'))
-            print(self.operateBook(r2, '续'))
-            print(self.operateBook(r2, '还'))
 
 
     def getReader(self):
@@ -87,8 +92,8 @@ class CirculationPage:
                 "wzcshu": "0",
                 "gjhjcshu": "0",
                 "qkuan": "0",
-                "dzdw": self.rp.randomValue(self.ep.getDzdw()),
-                "registerPlaceId": self.rp.randomValue(self.ep.getRegisterPlaceId())       # 办证地点
+                "dzdw": self.rp.randomValue(self.ep.getDzdw())
+                # "registerPlaceId": self.rp.randomValue(self.ep.getRegisterPlaceId())       # 办证地点
             }).json()
             if res['message'] == '操作成功!':
                 readerList.append(n)
