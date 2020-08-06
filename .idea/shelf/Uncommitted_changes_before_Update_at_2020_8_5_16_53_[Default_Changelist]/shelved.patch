@@ -1,0 +1,506 @@
+Index: Utils/ElibUtils.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># -*- coding: utf-8 -*-”\r\nimport random\r\nfrom Utils.RequestsUtils import RequestsPage\r\nfrom Utils.AESUtils import AesPage\r\n\r\nclass ElibPage:\r\n\r\n    def __init__(self, loginName, loginPwd, isAes='yes'):\r\n        self.rp = RequestsPage()\r\n\r\n        self.baseUrl = 'http://192.168.1.120:8080'\r\n        if isAes == 'yes':\r\n            self.loginMsg = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/p/login/userLogin', {\r\n                'loginName': loginName,\r\n                'loginPwd': AesPage().AES_encrypt(loginPwd)\r\n            }).json()\r\n        else:\r\n            self.loginMsg = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/p/login/userLogin', {\r\n                'loginName': loginName,\r\n                'loginPwd': loginPwd\r\n            }).json()\r\n\r\n        if self.getLoginMsg()['code'] == 0:\r\n            self.gysId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {\r\n                'userToken': self.getUserToken(),\r\n                'flag': 1,\r\n                'pageSize': 1000,\r\n                'pageNumber': 1,\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.ltlxId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {\r\n                'userToken': self.getUserToken(),\r\n                'pageSize': 1000,\r\n                'pageNumber': 1,\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.czId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {\r\n                'userToken': self.getUserToken(),\r\n                'state': -1,\r\n                'pageSize': 1000,\r\n                'pageNumber': 1,\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.yslxId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {\r\n                'userToken': self.getUserToken(),\r\n                'flag': 0,\r\n                'pageSize': 1000,\r\n                'pageNumber': 1,\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.batchId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {\r\n                'userToken': self.getUserToken(),\r\n                'flag': 1,\r\n                'pageSize': 1000,\r\n                'pageNumber': 1,\r\n                'batchStatus': '正常',\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.registerPlaceId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {\r\n                                                           'userToken': self.getUserToken(),\r\n                                                           'pageSize': 1000,\r\n                                                           'pageNumber': 1,\r\n                                                           'libId': self.getLibid()\r\n                                                       }).json()\r\n            self.dzlxId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {\r\n                                                  'userToken': self.getUserToken(),\r\n                                                  'pageSize': 1000,\r\n                                                  'pageNumber': 1,\r\n                                                  'libId': self.getLibid()\r\n                                              }).json()\r\n            self.marcFBId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/parameter/marcFb', {\r\n                'userToken': self.getUserToken(),\r\n                'libId': self.getLibid()\r\n            }).json()\r\n            self.zdpcId = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/parameter/zdpcList', {\r\n                'userToken': self.getUserToken()\r\n            }).json()\r\n            self.ydd = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {\r\n                'userToken': self.getUserToken(),\r\n                'pageNumber': 1,\r\n                'pageSize': 50,\r\n                'flag': 1\r\n            }).json()\r\n            self.ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {\r\n                'userToken': self.getUserToken(),\r\n                'pageNumber': 1,\r\n                'pageSize': 50,\r\n                'flag': 1\r\n            }).json()\r\n            self.hb = self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/parameter/hbList', {\r\n                'userToken': self.getUserToken(),\r\n                'libId': self.getLibid()\r\n            }).json()\r\n\r\n\r\n    def getUrl(self):\r\n        \"\"\"\r\n        获取 baseUrl\r\n        :return: String\r\n        \"\"\"\r\n        return self.baseUrl\r\n\r\n    def getUserToken(self):\r\n        \"\"\"\r\n        获取 token\r\n        :return: String\r\n        \"\"\"\r\n        return self.loginMsg['data']['userToken']\r\n\r\n    def getLibid(self):\r\n        \"\"\"\r\n        获取馆ID\r\n        :return: String\r\n        \"\"\"\r\n        return self.loginMsg['data']['user']['libId']\r\n\r\n    def getLoginMsg(self):\r\n        \"\"\"\r\n        获取登录用户信息\r\n        :return:\r\n        \"\"\"\r\n        return self.loginMsg\r\n\r\n    def getGysid(self):\r\n        \"\"\"\r\n        获取供应商ID （暂时先只取第一个供应商）\r\n        :return: String\r\n        \"\"\"\r\n        return self.gysId['data']['dataList'][0]['gysId']\r\n\r\n    def getLtlxid(self):\r\n        \"\"\"\r\n        获取流通类型ID （暂时先只取第一个流通类型）\r\n        :return: String\r\n        \"\"\"\r\n        return self.ltlxId['data']['dataList'][0]['ltlxid']\r\n\r\n    def getCzid(self):\r\n        \"\"\"\r\n        获取藏址ID\r\n        :return: Tuple\r\n        \"\"\"\r\n        czList = list()\r\n        for cz in self.czId['data']['dataList']:\r\n            czList.append(cz['czid'])\r\n        return tuple(czList)\r\n\r\n    def getYsuanid(self):\r\n        \"\"\"\r\n        获取预算ID  （暂时先只取第一个预算）\r\n        :return: String\r\n        \"\"\"\r\n        return self.yslxId['data']['dataList'][0]['yslxid']\r\n\r\n    def getBatchid(self):\r\n        \"\"\"\r\n        获取编目批次ID\r\n        :return: Tuple\r\n        \"\"\"\r\n        batchList = list()\r\n        for batch in self.batchId['data']['dataList']:\r\n            batchList.append(batch['batchId'])\r\n        return tuple(batchList)\r\n\r\n    def getRegisterPlaceId(self):\r\n        \"\"\"\r\n        获取办证地点ID\r\n        :return: Tuple\r\n        \"\"\"\r\n        registerPlaceList = list()\r\n        for registerPlace in self.registerPlaceId['data']['dataList']:\r\n            registerPlaceList.append(registerPlace['registerPlaceId'])\r\n        return tuple(registerPlaceList)\r\n\r\n    def getDzlxid(self, ty=None):\r\n        \"\"\"\r\n        获取读者类型\r\n        :return: Tuple / String\r\n        \"\"\"\r\n        dzlxList = list()\r\n        if ty == 'more':\r\n            for i in self.dzlxId['data']['dataList']:\r\n                    dzlxList.append(i['dzlxid'])\r\n            return tuple(dzlxList)\r\n        else:\r\n            return self.dzlxId['data']['dataList'][0]['dzlxid']\r\n\r\n    def getFblxid(self):\r\n        \"\"\"\r\n        获取分编类型\r\n        :return: String\r\n        \"\"\"\r\n        return self.marcFBId['data']['list'][0]['marcfbid']\r\n\r\n    def getZdpcid(self):\r\n        \"\"\"\r\n        获取征订目录\r\n        :return: Tuple\r\n        \"\"\"\r\n        zdpcList = list()\r\n        for i in self.zdpcId['data']:\r\n            zdpcList.append(i['zdpcid'])\r\n        return tuple(zdpcList)\r\n\r\n    def getYdd(self):\r\n        \"\"\"\r\n        获取预定单\r\n        :return: Tuple\r\n        \"\"\"\r\n        yddList = list()\r\n        for i in self.ydd['data']['dataList']:\r\n            yddList.append(i['ydpcid'])\r\n        return tuple(yddList)\r\n\r\n    def getYsd(self):\r\n        \"\"\"\r\n        获取验收单\r\n        :return: Tuple\r\n        \"\"\"\r\n        ysdList = list()\r\n        for i in self.ysd['data']['dataList']:\r\n            ysdList.append(i['yspcid'])\r\n        return tuple(ysdList)\r\n\r\n    def getZdsmReserve(self, marcid=None, zdpcid=None, zdsmid=None):\r\n        \"\"\"\r\n        征订书目-跳转预订\r\n        参数传递： 征订批次->预订（zdpcid,zdsmid）。直接预订（marcid）\r\n        :param zdsmid:  征订书目id\r\n        :param zdpcid:  征订批次id\r\n        :param marcid:  marcid\r\n        :return: req(<Response [200]>)\r\n        \"\"\"\r\n        if zdpcid is None and zdsmid is None and marcid is not None:\r\n            return self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {\r\n            'userToken': self.getUserToken(),\r\n            'marcid': marcid\r\n        }).json()\r\n        if zdpcid is not None and zdsmid is not None and marcid is None:\r\n            return self.rp.sendRequest(\"POST\", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {\r\n                'userToken': self.getUserToken(),\r\n                'zdpcid': zdpcid,\r\n                'zdsmid': zdsmid\r\n            }).json()\r\n\r\n    def getHbList(self, hbcode):\r\n        \"\"\"\r\n        货币列表 CNY\r\n        :return: String\r\n        \"\"\"\r\n        for i in self.hb['data']:\r\n            if i['hbcode'] == hbcode:\r\n                return i['hbid']\r\n\r\n    def getXingbie(self):\r\n        \"\"\"\r\n        获取性别\r\n        :return: Int\r\n        \"\"\"\r\n        return random.randint(0, 1)\r\n\r\n    def getDzdw(self):\r\n        \"\"\"\r\n        获取工作单位\r\n        :return: Tuple\r\n        \"\"\"\r\n        dzdw = (\"asd1\", \"asd2\", \"asd3\")\r\n        return dzdw\r\n\r\n\r\n\r\nif __name__ == '__main__':\r\n    print(ElibPage('zhonglilong', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D').getDzlxid('more'))\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Utils/ElibUtils.py	(revision 518c5a7a611c0830083fe907985413c6d44ca2fd)
++++ Utils/ElibUtils.py	(date 1596612608041)
+@@ -100,6 +100,13 @@
+         """
+         return self.baseUrl
+ 
++    def getUsercode(self):
++        """
++        获取 baseUrl
++        :return: String
++        """
++        return self.loginMsg['data']['user']['usercode']
++
+     def getUserToken(self):
+         """
+         获取 token
+Index: Model/Func/Setzhing.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># -*- coding: utf-8 -*-\r\n# @Time    : 2020/8/4 11:29\r\nfrom Utils.ElibUtils import ElibPage\r\nfrom Utils.RequestsUtils import RequestsPage\r\n\r\n\r\nclass SetzhingPage:\r\n\r\n    def __init__(self):\r\n        self.rp = RequestsPage()\r\n        self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')\r\n\r\n    def BookmanForQuery(self):\r\n        \"\"\"\r\n        书商管理列表功能验证\r\n        :return: None\r\n        \"\"\"\r\n        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/sys/setup/param/gysFind', {\r\n            'userToken': self.ep.getUserToken(),\r\n            'libid': self.ep.getLibid(),\r\n            'pageNumber': 1,\r\n            'pageSize': 15,\r\n            'flag': 1\r\n        }).json()\r\n        if res['message'] == '操作成功':\r\n            print(\"书商管理书目列表查询成功\")\r\n            # pass\r\n        else:\r\n            print(\"书商管理书目列表查询出错\")\r\n\r\n\r\nif __name__ == '__main__':\r\n    SetzhingPage().BookmanForQuery()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Model/Func/Setzhing.py	(revision 518c5a7a611c0830083fe907985413c6d44ca2fd)
++++ Model/Func/Setzhing.py	(date 1596616563806)
+@@ -1,5 +1,7 @@
+ # -*- coding: utf-8 -*-
+ # @Time    : 2020/8/4 11:29
++from pprint import pprint
++
+ from Utils.ElibUtils import ElibPage
+ from Utils.RequestsUtils import RequestsPage
+ 
+@@ -8,7 +10,7 @@
+ 
+     def __init__(self):
+         self.rp = RequestsPage()
+-        self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
++        self.ep = ElibPage('hoxx', '123456')
+ 
+     def BookmanForQuery(self):
+         """
+@@ -28,6 +30,47 @@
+         else:
+             print("书商管理书目列表查询出错")
+ 
++    def BookmanForAdd(self):
++        """
++        新增书商功能验证
++        :return: None
++        """
++        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/sys/setup/param/gysSave', {
++            'userToken': self.ep.getUserToken(),
++            'libid': self.ep.getLibid(),
++            'gysCode': 'SSDM-01',
++            'gysName': '南方书店',
++            'gysStat': '正常',
++            'gysCred': 0
++        }).json()
++        if res['message'] == '操作成功':
++            print("新增书商成功")
++            # pass
++        else:
++            print(res)
++            print(self.ep.getUsercode(), "新增书商失败")
++
++    def BookmanForMod(self):
++        """
++        修改书商功能验证
++        :return: None
++        """
++        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/sys/setup/param/gysSave', {
++            'userToken': self.ep.getUserToken(),
++            'libid': self.ep.getLibid(),
++            'gysCode': 'SSDM-01',
++            'gysName': '南方书店',
++            'gysStat': '正常',
++            'gysCred': 0
++        }).json()
++        if res['message'] == '操作成功!':
++            print("修改书商成功")
++            # pass
++        else:
++            print(self.ep.getUsercode(), "修改书商失败")
++
++
+ 
+ if __name__ == '__main__':
+-    SetzhingPage().BookmanForQuery()
++    # SetzhingPage().BookmanForQuery()
++    SetzhingPage().BookmanForAdd()
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_4_10_30__Default_Changelist_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_4_10_30__Default_Changelist_.xml	(date 1596610556277)
++++ .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_4_10_30__Default_Changelist_.xml	(date 1596610556277)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_2020_8_4_10_30_[Default_Changelist]" date="1596508215911" recycled="true" deleted="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_4_10_30_[Default_Changelist]/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 2020/8/4 10:30 [Default Changelist]" />
++</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_37__Default_Changelist_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_37__Default_Changelist_.xml	(date 1596610556184)
++++ .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_37__Default_Changelist_.xml	(date 1596610556184)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_2020_8_3_18_37_[Default_Changelist]" date="1596451073067" recycled="true" deleted="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_37_[Default_Changelist]/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 2020/8/3 18:37 [Default Changelist]" />
++</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_1.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_1.xml	(date 1596610556159)
++++ .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_1.xml	(date 1596610556159)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_2020_8_3_18_31_[Default_Changelist]1" date="1596450709524" recycled="true" deleted="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31_[Default_Changelist]1/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 2020/8/3 18:31 [Default Changelist]" />
++</changelist>
+\ No newline at end of file
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_.xml	(date 1596610556139)
++++ .idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_.xml	(date 1596610556139)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_2020_8_3_18_31_[Default_Changelist]" date="1596450690135" recycled="false" toDelete="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31_[Default_Changelist]/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 2020/8/3 18:31 [Default Changelist]" />
++</changelist>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.7\" project-jdk-type=\"Python SDK\" />\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/misc.xml	(revision 518c5a7a611c0830083fe907985413c6d44ca2fd)
++++ .idea/misc.xml	(date 1596610198710)
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.7" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.6" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"BranchesTreeState\">\r\n    <expand>\r\n      <path>\r\n        <item name=\"ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n        <item name=\"LOCAL_ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n      </path>\r\n      <path>\r\n        <item name=\"ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n        <item name=\"REMOTE_ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n      </path>\r\n      <path>\r\n        <item name=\"ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n        <item name=\"REMOTE_ROOT\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n        <item name=\"GROUP_NODE:zll\" type=\"e8cecc67:BranchNodeDescriptor\" />\r\n      </path>\r\n    </expand>\r\n    <select />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"56a886b0-ff97-4be5-8cd5-19b236abb3af\" name=\"Default Changelist\" comment=\"v1.2\">\r\n      <change beforePath=\"$PROJECT_DIR$/Test/TLTest.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Test/TLTest.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Utils/ElibUtils.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Utils/ElibUtils.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Utils/RequestsUtils.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Utils/RequestsUtils.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Utils/SqlLiteUtils.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/Utils/SqlLiteUtils.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/book.db\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/book.db\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"master\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GithubDefaultAccount\">\r\n    <option name=\"defaultAccountId\" value=\"e701f06d-eb13-46d6-95cd-2ac7426f78b2\" />\r\n  </component>\r\n  <component name=\"ProjectId\" id=\"1eLEPbVvrclHYvlwFoRAYF4mvh4\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\r\n    <ConfirmationsSetting value=\"1\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">\r\n    <property name=\"RunOnceActivity.OpenProjectViewOnStart\" value=\"true\" />\r\n    <property name=\"RunOnceActivity.ShowReadmeOnStart\" value=\"true\" />\r\n    <property name=\"SHARE_PROJECT_CONFIGURATION_FILES\" value=\"true\" />\r\n    <property name=\"ignore_missing_gitignore\" value=\"true\" />\r\n    <property name=\"last_opened_file_path\" value=\"$PROJECT_DIR$\" />\r\n    <property name=\"restartRequiresConfirmation\" value=\"false\" />\r\n    <property name=\"settings.editor.selected.configurable\" value=\"vcs.Git\" />\r\n  </component>\r\n  <component name=\"RunManager\" selected=\"Python.Circulation (1)\">\r\n    <configuration name=\"Circulation (1)\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"TJProject\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/Model/Func\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/Model/Func/Circulation.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"Circulation\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"TJProject\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/Model/Func\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"D:\\Cache\\Project\\TJProject\\Model\\Func\\Circulation.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"ElibUtils\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"TJProject\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/Utils\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/Utils/ElibUtils.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"Unittests for TLTest.LTTest.test_dzxbjytj_total\" type=\"tests\" factoryName=\"Unittests\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"TJProject\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/Test\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"_new_additionalArguments\" value=\"&quot;&quot;\" />\r\n      <option name=\"_new_target\" value=\"&quot;TLTest.LTTest.test_dzxbjytj_total&quot;\" />\r\n      <option name=\"_new_targetType\" value=\"&quot;PYTHON&quot;\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"Unittests in TLTest.py\" type=\"tests\" factoryName=\"Unittests\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"TJProject\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/Test\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"_new_additionalArguments\" value=\"&quot;&quot;\" />\r\n      <option name=\"_new_target\" value=\"&quot;$PROJECT_DIR$/Test/TLTest.py&quot;\" />\r\n      <option name=\"_new_targetType\" value=\"&quot;PATH&quot;\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Python.Circulation (1)\" />\r\n        <item itemvalue=\"Python.Circulation\" />\r\n        <item itemvalue=\"Python.ElibUtils\" />\r\n        <item itemvalue=\"Python tests.Unittests in TLTest.py\" />\r\n        <item itemvalue=\"Python tests.Unittests for TLTest.LTTest.test_dzxbjytj_total\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SvnConfiguration\">\r\n    <configuration />\r\n  </component>\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"56a886b0-ff97-4be5-8cd5-19b236abb3af\" name=\"Default Changelist\" comment=\"\" />\r\n      <created>1594092449592</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1594092449592</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"v1.0\">\r\n      <created>1594880269699</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1594880269699</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"v1.1\">\r\n      <created>1595236345893</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1595236345893</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"v1.1\">\r\n      <created>1595237968165</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1595237968165</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"v1.2\">\r\n      <created>1595316369892</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1595316369892</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"5\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n    <option name=\"oldMeFiltersMigrated\" value=\"true\" />\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <ignored-roots>\r\n      <path value=\"$PROJECT_DIR$\" />\r\n    </ignored-roots>\r\n    <MESSAGE value=\"v1.0\" />\r\n    <MESSAGE value=\"v1.1\" />\r\n    <MESSAGE value=\"v1.2\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"v1.2\" />\r\n  </component>\r\n  <component name=\"WindowStateProjectService\">\r\n    <state x=\"586\" y=\"198\" key=\"#Inspections\" timestamp=\"1594169184169\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"586\" y=\"198\" key=\"#Inspections/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594169184169\" />\r\n    <state x=\"656\" y=\"136\" key=\"#Unittests_for_LTTest.LTTest.test_lttj_default\" timestamp=\"1594890789343\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"656\" y=\"136\" key=\"#Unittests_for_LTTest.LTTest.test_lttj_default/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594890789343\" />\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog\" timestamp=\"1595296482328\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595296482328\" />\r\n    <state x=\"698\" y=\"320\" key=\"#com.intellij.fileTypes.FileTypeChooser\" timestamp=\"1595236658416\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"698\" y=\"320\" key=\"#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595236658416\" />\r\n    <state x=\"690\" y=\"266\" key=\"#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog\" timestamp=\"1594491010000\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"690\" y=\"266\" key=\"#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594491009999\" />\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"DiffContextDialog\" timestamp=\"1595298786517\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"DiffContextDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595298786517\" />\r\n    <state x=\"740\" y=\"275\" key=\"FileChooserDialogImpl\" timestamp=\"1595236962894\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"740\" y=\"275\" key=\"FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595236962894\" />\r\n    <state x=\"832\" y=\"417\" key=\"Github.ShareDialog\" timestamp=\"1594881180977\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"832\" y=\"417\" key=\"Github.ShareDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594881180977\" />\r\n    <state x=\"801\" y=\"222\" key=\"Github.UntrackedFilesDialog\" timestamp=\"1594881218664\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"801\" y=\"222\" key=\"Github.UntrackedFilesDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594881218664\" />\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.bottom\" timestamp=\"1596186657514\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1596186657514\" />\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.center\" timestamp=\"1596186657514\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1596186657514\" />\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.left\" timestamp=\"1596186657514\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1596186657514\" />\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.right\" timestamp=\"1596186657514\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"299\" key=\"GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1596186657514\" />\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.bottom\" timestamp=\"1595316687698\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595316687698\" />\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.center\" timestamp=\"1595316687698\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595316687698\" />\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.left\" timestamp=\"1595316687698\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595316687698\" />\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.right\" timestamp=\"1595316687698\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"1899\" height=\"382\" key=\"GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595316687698\" />\r\n    <state x=\"798\" y=\"222\" key=\"RollbackChangesDialog\" timestamp=\"1595237210813\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"798\" y=\"222\" key=\"RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237210813\" />\r\n    <state x=\"461\" y=\"164\" key=\"SettingsEditor\" timestamp=\"1595236848162\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"461\" y=\"164\" key=\"SettingsEditor/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595236848162\" />\r\n    <state x=\"552\" y=\"253\" key=\"Vcs.Push.Dialog.v2\" timestamp=\"1595316386523\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"552\" y=\"253\" key=\"Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595316386523\" />\r\n    <state x=\"692\" y=\"254\" key=\"VcsDiffUtil.ChangesDialog\" timestamp=\"1595237376881\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"692\" y=\"254\" key=\"VcsDiffUtil.ChangesDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237376881\" />\r\n    <state width=\"700\" height=\"455\" key=\"XDebugger.FullValuePopup\" timestamp=\"1595296929376\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state width=\"700\" height=\"455\" key=\"XDebugger.FullValuePopup/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595296929376\" />\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"com.intellij.history.integration.ui.views.FileHistoryDialog\" timestamp=\"1595237269526\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237269526\" />\r\n    <state x=\"753\" y=\"433\" key=\"com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2\" timestamp=\"1596185563529\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"753\" y=\"433\" key=\"com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1596185563529\" />\r\n    <state x=\"1132\" y=\"330\" width=\"692\" height=\"566\" key=\"git4idea.branch.GitBranchIsNotFullyMergedDialog\" timestamp=\"1595237916071\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"1132\" y=\"330\" width=\"692\" height=\"566\" key=\"git4idea.branch.GitBranchIsNotFullyMergedDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237916071\" />\r\n    <state x=\"721\" y=\"232\" key=\"git4idea.branch.GitSmartOperationDialog\" timestamp=\"1595237444683\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"721\" y=\"232\" key=\"git4idea.branch.GitSmartOperationDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237444683\" />\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"git4idea.log.GitShowExternalLogAction\" timestamp=\"1595237735101\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"92\" y=\"92\" width=\"1736\" height=\"856\" key=\"git4idea.log.GitShowExternalLogAction/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1595237735101\" />\r\n    <state x=\"736\" y=\"419\" key=\"git4idea.remote.GitConfigureRemotesDialog\" timestamp=\"1594880482634\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"736\" y=\"419\" key=\"git4idea.remote.GitConfigureRemotesDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594880482634\" />\r\n    <state x=\"623\" y=\"225\" width=\"672\" height=\"678\" key=\"search.everywhere.popup\" timestamp=\"1594978180703\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"623\" y=\"225\" width=\"672\" height=\"678\" key=\"search.everywhere.popup/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594978180703\" />\r\n    <state x=\"682\" y=\"431\" key=\"vcs.readOnlyHandler.ReadOnlyStatusDialog\" timestamp=\"1594803286487\">\r\n      <screen x=\"0\" y=\"0\" width=\"1920\" height=\"1040\" />\r\n    </state>\r\n    <state x=\"682\" y=\"431\" key=\"vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1920.1040@0.0.1920.1040\" timestamp=\"1594803286487\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/workspace.xml	(revision 518c5a7a611c0830083fe907985413c6d44ca2fd)
++++ .idea/workspace.xml	(date 1596617578810)
+@@ -13,18 +13,23 @@
+       <path>
+         <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+         <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+-        <item name="GROUP_NODE:zll" type="e8cecc67:BranchNodeDescriptor" />
++        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+       </path>
+     </expand>
+     <select />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="56a886b0-ff97-4be5-8cd5-19b236abb3af" name="Default Changelist" comment="v1.2">
+-      <change beforePath="$PROJECT_DIR$/Test/TLTest.py" beforeDir="false" afterPath="$PROJECT_DIR$/Test/TLTest.py" afterDir="false" />
++    <list default="true" id="56a886b0-ff97-4be5-8cd5-19b236abb3af" name="Default Changelist" comment="v2.3.1">
++      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_31__Default_Changelist_1.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_3_18_37__Default_Changelist_.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2020_8_4_10_30__Default_Changelist_.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/TJProject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TJProject.iml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/Model/Func/Setzhing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/Func/Setzhing.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/Model/book.db" beforeDir="false" />
+       <change beforePath="$PROJECT_DIR$/Utils/ElibUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utils/ElibUtils.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/Utils/RequestsUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utils/RequestsUtils.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/Utils/SqlLiteUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utils/SqlLiteUtils.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/book.db" beforeDir="false" afterPath="$PROJECT_DIR$/book.db" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -45,9 +50,6 @@
+       </map>
+     </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+-  </component>
+-  <component name="GithubDefaultAccount">
+-    <option name="defaultAccountId" value="e701f06d-eb13-46d6-95cd-2ac7426f78b2" />
+   </component>
+   <component name="ProjectId" id="1eLEPbVvrclHYvlwFoRAYF4mvh4" />
+   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+@@ -64,10 +66,10 @@
+     <property name="ignore_missing_gitignore" value="true" />
+     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+     <property name="restartRequiresConfirmation" value="false" />
+-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
++    <property name="settings.editor.selected.configurable" value="fileTemplates" />
+   </component>
+-  <component name="RunManager" selected="Python.Circulation (1)">
+-    <configuration name="Circulation (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
++  <component name="RunManager" selected="Python.Setzhing">
++    <configuration name="Catalogued" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="TJProject" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+       <option name="PARENT_ENVS" value="true" />
+@@ -79,7 +81,7 @@
+       <option name="IS_MODULE_SDK" value="true" />
+       <option name="ADD_CONTENT_ROOTS" value="true" />
+       <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Model/Func/Circulation.py" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Model/Func/Catalogued.py" />
+       <option name="PARAMETERS" value="" />
+       <option name="SHOW_COMMAND_LINE" value="false" />
+       <option name="EMULATE_TERMINAL" value="false" />
+@@ -88,7 +90,7 @@
+       <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
+-    <configuration name="Circulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
++    <configuration name="Circulation (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="TJProject" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+       <option name="PARENT_ENVS" value="true" />
+@@ -100,7 +102,7 @@
+       <option name="IS_MODULE_SDK" value="true" />
+       <option name="ADD_CONTENT_ROOTS" value="true" />
+       <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="SCRIPT_NAME" value="D:\Cache\Project\TJProject\Model\Func\Circulation.py" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Model/Func/Circulation.py" />
+       <option name="PARAMETERS" value="" />
+       <option name="SHOW_COMMAND_LINE" value="false" />
+       <option name="EMULATE_TERMINAL" value="false" />
+@@ -109,7 +111,7 @@
+       <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
+-    <configuration name="ElibUtils" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
++    <configuration name="Circulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="TJProject" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+       <option name="PARENT_ENVS" value="true" />
+@@ -117,11 +119,11 @@
+         <env name="PYTHONUNBUFFERED" value="1" />
+       </envs>
+       <option name="SDK_HOME" value="" />
+-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Utils" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Model/Func" />
+       <option name="IS_MODULE_SDK" value="true" />
+       <option name="ADD_CONTENT_ROOTS" value="true" />
+       <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Utils/ElibUtils.py" />
++      <option name="SCRIPT_NAME" value="D:\Cache\Project\TJProject\Model\Func\Circulation.py" />
+       <option name="PARAMETERS" value="" />
+       <option name="SHOW_COMMAND_LINE" value="false" />
+       <option name="EMULATE_TERMINAL" value="false" />
+@@ -130,41 +132,55 @@
+       <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
+-    <configuration name="Unittests for TLTest.LTTest.test_dzxbjytj_total" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
++    <configuration name="Periodical" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="TJProject" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+       <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
+       <option name="SDK_HOME" value="" />
+-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Test" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Model/Func" />
+       <option name="IS_MODULE_SDK" value="true" />
+       <option name="ADD_CONTENT_ROOTS" value="true" />
+       <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="_new_additionalArguments" value="&quot;&quot;" />
+-      <option name="_new_target" value="&quot;TLTest.LTTest.test_dzxbjytj_total&quot;" />
+-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Model/Func/Periodical.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
+-    <configuration name="Unittests in TLTest.py" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
++    <configuration name="Setzhing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="TJProject" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+       <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
+       <option name="SDK_HOME" value="" />
+-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Test" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Model/Func" />
+       <option name="IS_MODULE_SDK" value="true" />
+       <option name="ADD_CONTENT_ROOTS" value="true" />
+       <option name="ADD_SOURCE_ROOTS" value="true" />
+-      <option name="_new_additionalArguments" value="&quot;&quot;" />
+-      <option name="_new_target" value="&quot;$PROJECT_DIR$/Test/TLTest.py&quot;" />
+-      <option name="_new_targetType" value="&quot;PATH&quot;" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Model/Func/Setzhing.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
+     <recent_temporary>
+       <list>
++        <item itemvalue="Python.Setzhing" />
++        <item itemvalue="Python.Periodical" />
++        <item itemvalue="Python.Catalogued" />
+         <item itemvalue="Python.Circulation (1)" />
+         <item itemvalue="Python.Circulation" />
+-        <item itemvalue="Python.ElibUtils" />
+-        <item itemvalue="Python tests.Unittests in TLTest.py" />
+-        <item itemvalue="Python tests.Unittests for TLTest.LTTest.test_dzxbjytj_total" />
+       </list>
+     </recent_temporary>
+   </component>
+@@ -207,7 +223,21 @@
+       <option name="project" value="LOCAL" />
+       <updated>1595316369892</updated>
+     </task>
+-    <option name="localTasksCounter" value="5" />
++    <task id="LOCAL-00005" summary="v2.3">
++      <created>1596511631904</created>
++      <option name="number" value="00005" />
++      <option name="presentableId" value="LOCAL-00005" />
++      <option name="project" value="LOCAL" />
++      <updated>1596511631904</updated>
++    </task>
++    <task id="LOCAL-00006" summary="v2.3.1">
++      <created>1596513160893</created>
++      <option name="number" value="00006" />
++      <option name="presentableId" value="LOCAL-00006" />
++      <option name="project" value="LOCAL" />
++      <updated>1596513160893</updated>
++    </task>
++    <option name="localTasksCounter" value="7" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -229,9 +259,15 @@
+     <MESSAGE value="v1.0" />
+     <MESSAGE value="v1.1" />
+     <MESSAGE value="v1.2" />
+-    <option name="LAST_COMMIT_MESSAGE" value="v1.2" />
++    <MESSAGE value="v2.3" />
++    <MESSAGE value="v2.3.1" />
++    <option name="LAST_COMMIT_MESSAGE" value="v2.3.1" />
+   </component>
+   <component name="WindowStateProjectService">
++    <state x="656" y="111" key="#Catalogued" timestamp="1596451110796">
++      <screen x="0" y="0" width="1920" height="1040" />
++    </state>
++    <state x="656" y="111" key="#Catalogued/0.0.1920.1040@0.0.1920.1040" timestamp="1596451110796" />
+     <state x="586" y="198" key="#Inspections" timestamp="1594169184169">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+@@ -256,10 +292,10 @@
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+     <state x="92" y="92" width="1736" height="856" key="DiffContextDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1595298786517" />
+-    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1595236962894">
++    <state x="740" y="265" width="440" height="500" key="FileChooserDialogImpl" timestamp="1596510532252">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state x="740" y="275" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1595236962894" />
++    <state x="740" y="265" width="440" height="500" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1596510532252" />
+     <state x="832" y="417" key="Github.ShareDialog" timestamp="1594881180977">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+@@ -268,22 +304,22 @@
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+     <state x="801" y="222" key="Github.UntrackedFilesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1594881218664" />
+-    <state width="1899" height="299" key="GridCell.Tab.0.bottom" timestamp="1596186657514">
++    <state width="1899" height="282" key="GridCell.Tab.0.bottom" timestamp="1596616563833">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state width="1899" height="299" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1596186657514" />
+-    <state width="1899" height="299" key="GridCell.Tab.0.center" timestamp="1596186657514">
++    <state width="1899" height="282" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1596616563833" />
++    <state width="1899" height="282" key="GridCell.Tab.0.center" timestamp="1596616563832">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state width="1899" height="299" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1596186657514" />
+-    <state width="1899" height="299" key="GridCell.Tab.0.left" timestamp="1596186657514">
++    <state width="1899" height="282" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1596616563832" />
++    <state width="1899" height="282" key="GridCell.Tab.0.left" timestamp="1596616563832">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state width="1899" height="299" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1596186657514" />
+-    <state width="1899" height="299" key="GridCell.Tab.0.right" timestamp="1596186657514">
++    <state width="1899" height="282" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1596616563832" />
++    <state width="1899" height="282" key="GridCell.Tab.0.right" timestamp="1596616563832">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state width="1899" height="299" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1596186657514" />
++    <state width="1899" height="282" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1596616563832" />
+     <state width="1899" height="382" key="GridCell.Tab.1.bottom" timestamp="1595316687698">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+@@ -304,14 +340,14 @@
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+     <state x="798" y="222" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1595237210813" />
+-    <state x="461" y="164" key="SettingsEditor" timestamp="1595236848162">
++    <state x="887" y="207" key="SettingsEditor" timestamp="1596510700176">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state x="461" y="164" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1595236848162" />
+-    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1595316386523">
++    <state x="887" y="207" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1596510700176" />
++    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1596513185866">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1595316386523" />
++    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1596513185866" />
+     <state x="692" y="254" key="VcsDiffUtil.ChangesDialog" timestamp="1595237376881">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+@@ -324,10 +360,14 @@
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+     <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1595237269526" />
+-    <state x="753" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1596185563529">
++    <state x="753" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1596617578792">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state x="753" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1596185563529" />
++    <state x="753" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1040@0.0.1920.1040" timestamp="1596617578792" />
++    <state x="526" y="223" width="596" height="584" key="find.popup" timestamp="1596510340822">
++      <screen x="0" y="0" width="1920" height="1040" />
++    </state>
++    <state x="526" y="223" width="596" height="584" key="find.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1596510340822" />
+     <state x="1132" y="330" width="692" height="566" key="git4idea.branch.GitBranchIsNotFullyMergedDialog" timestamp="1595237916071">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+@@ -344,10 +384,14 @@
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+     <state x="736" y="419" key="git4idea.remote.GitConfigureRemotesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1594880482634" />
+-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1594978180703">
++    <state x="721" y="393" width="628" height="284" key="org.intellij.images.editor.actions.BackgroundImageDialog" timestamp="1596510555651">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1594978180703" />
++    <state x="721" y="393" width="628" height="284" key="org.intellij.images.editor.actions.BackgroundImageDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1596510555651" />
++    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1596510551799">
++      <screen x="0" y="0" width="1920" height="1040" />
++    </state>
++    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1596510551799" />
+     <state x="682" y="431" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1594803286487">
+       <screen x="0" y="0" width="1920" height="1040" />
+     </state>
+Index: .idea/TJProject.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<module type=\"PYTHON_MODULE\" version=\"4\">\r\n  <component name=\"NewModuleRootManager\">\r\n    <content url=\"file://$MODULE_DIR$\" />\r\n    <orderEntry type=\"inheritedJdk\" />\r\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\r\n  </component>\r\n</module>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/TJProject.iml	(revision 518c5a7a611c0830083fe907985413c6d44ca2fd)
++++ .idea/TJProject.iml	(date 1596610198771)
+@@ -2,7 +2,7 @@
+ <module type="PYTHON_MODULE" version="4">
+   <component name="NewModuleRootManager">
+     <content url="file://$MODULE_DIR$" />
+-    <orderEntry type="inheritedJdk" />
++    <orderEntry type="jdk" jdkName="Python 3.6" jdkType="Python SDK" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
+ </module>
+\ No newline at end of file
+diff --git Model/book.db Model/book.db
+deleted file mode 100644
