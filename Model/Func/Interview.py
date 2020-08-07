@@ -3,7 +3,6 @@ import random
 import json
 from Utils.RequestsUtils import RequestsPage
 from Utils.ElibUtils import ElibPage
-from urllib import parse
 
 class InterviewPage(ElibPage):
 

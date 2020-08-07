@@ -67,7 +67,7 @@ class Book:
                     'ltlxid': self.ep.getLtlxid(),
                     'cygid1': self.ep.getLibid(),
                     'cygid0': self.ep.getLibid(),
-                    'ysuanid': self.ep.getYsuanid(),
+                    'ysuanid': self.ep.getYslxid(),
                     'marctyId': dataList['marctyid'],
                     'cejia': self.rp.matchNumber(dataList['jge']),
                     'taojia': self.rp.matchNumber(dataList['jge']),

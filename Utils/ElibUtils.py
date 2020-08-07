@@ -3,7 +3,16 @@ import random
 from Utils.RequestsUtils import RequestsPage
 from Utils.AESUtils import AesPage
 
-class ElibPage:
+
+class ElibPage(object):
+
+    __instance = None
+
+    # python3 单例模式
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super(ElibPage, cls).__new__(cls)
+        return cls.__instance
 
     def __init__(self, loginName, loginPwd, isAes='yes'):
         self.rp = RequestsPage()
@@ -49,13 +58,16 @@ class ElibPage:
                 'batchStatus': '正常',
                 'libId': self.getLibid()
             }).json()
-            self.registerPlaceId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {
+            self.registerPlaceId = self.rp.sendRequest("POST",
+                                                       self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list',
+                                                       {
                                                            'userToken': self.getUserToken(),
                                                            'pageSize': 1000,
                                                            'pageNumber': 1,
                                                            'libId': self.getLibid()
                                                        }).json()
-            self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {
+            self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList',
+                                              {
                                                   'userToken': self.getUserToken(),
                                                   'pageSize': 1000,
                                                   'pageNumber': 1,
@@ -68,7 +80,6 @@ class ElibPage:
             self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
                 'userToken': self.getUserToken()
             }).json()
-
 
     def getUrl(self):
         """
@@ -205,7 +216,7 @@ class ElibPage:
         dzlxList = list()
         if ty == 'more':
             for i in self.dzlxId['data']['dataList']:
-                    dzlxList.append(i['dzlxid'])
+                dzlxList.append(i['dzlxid'])
             return tuple(dzlxList)
         else:
             return self.dzlxId['data']['dataList'][0]['dzlxid']
@@ -272,13 +283,13 @@ class ElibPage:
         :return: <[Response 200]>
         """
         return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcAdd', {
-                'userToken': self.getUserToken(),
-                'daima': daima,
-                'libid': self.getLibid(),
-                'gysid': self.getGysid(),
-                'ysid': self.getYsid(),
-                'isWork': isWork
-            }).json()
+            'userToken': self.getUserToken(),
+            'daima': daima,
+            'libid': self.getLibid(),
+            'gysid': self.getGysid(),
+            'ysid': self.getYsid(),
+            'isWork': isWork
+        }).json()
 
     def getYsd(self, ysdDaima='daimaCs', ysdIsWork=True):
         """ 采访 -> 验收单管理
@@ -344,9 +355,9 @@ class ElibPage:
         """
         if zdpcid is None and zdsmid is None and marcid is not None:
             return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
-            'userToken': self.getUserToken(),
-            'marcid': marcid
-        }).json()
+                'userToken': self.getUserToken(),
+                'marcid': marcid
+            }).json()
         if zdpcid is not None and zdsmid is not None and marcid is None:
             return self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/zdsm/reserve', {
                 'userToken': self.getUserToken(),
