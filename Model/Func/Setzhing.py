@@ -6,11 +6,11 @@ from Utils.ElibUtils import ElibPage
 from Utils.RequestsUtils import RequestsPage
 
 
-class SetzhingPage:
+class SetzhingPage(ElibPage):
 
-    def __init__(self):
+    def __init__(self, loginName, loginPwd):
+        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
-        self.ep = ElibPage('zmh', 'Tuodi123')
 
     def BookmanForQuery(self):
         """
@@ -128,6 +128,6 @@ if __name__ == '__main__':
     gysId_data = SetzhingPage().BookmanForFoundgysId()
     dcygname_data = SetzhingPage().BookmanForFoundcygname()
     SetzhingPage().BookmanForMod(gysId_data, dcygname_data)
-    SetzhingPage().BookmanForDel(gysId_data)
+    # SetzhingPage().BookmanForDel(gysId_data)
 
 

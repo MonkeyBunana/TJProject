@@ -4,11 +4,11 @@ from Utils.ElibUtils import ElibPage
 import json
 
 
-class PeriodicalPage:
+class PeriodicalPage(ElibPage):
 
-    def __init__(self):
+    def __init__(self, loginName, loginPwd):
+        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
-        self.ep = ElibPage('zhouminhao', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
 
     def PeriodicalForQuery(self):
         """
@@ -34,7 +34,7 @@ class PeriodicalPage:
         :return: None
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": "356f286ff456495e8304a1fa76c770f9",
+                "marcfbid": self.ep.getFblxid(),
                 "isQk": 1,
                 "simpleList": [
                     {"fieldName": "分类号", "marcField": "690a", "content": None, "isEmpty": 1, "sort": 1},
@@ -82,7 +82,6 @@ class PeriodicalPage:
                                   json.dumps(data)).json()
         if res['message'] == '操作成功!':
             print("新增期刊成功")
-            print("marctyid = ", res['data']['marctyid'])
             return res['data']['marctyid']
         else:
             print("新增期刊出错")
@@ -94,7 +93,7 @@ class PeriodicalPage:
         :return: None
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": "356f286ff456495e8304a1fa76c770f9",
+                "marcfbid": self.ep.getFblxid(),
                 "marctyid": cata,
                 "isQk": 1,
                 "simpleList": [
@@ -166,4 +165,4 @@ if __name__ == '__main__':
     PeriodicalPage().PeriodicalForQuery()  # 期刊书目列表功能验证
     cata = PeriodicalPage().PeriodicalForAdd()  # 新增期刊功能验证
     PeriodicalPage().PeriodicalForMod(cata)  # 修改期刊功能验证
-    PeriodicalPage().PeriodicalForDel(cata)  # 删除期刊功能验证
+    # PeriodicalPage().PeriodicalForDel(cata)  # 删除期刊功能验证
