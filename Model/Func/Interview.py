@@ -3,6 +3,7 @@ import random
 import json
 from Utils.RequestsUtils import RequestsPage
 from Utils.ElibUtils import ElibPage
+from urllib import parse
 
 class InterviewPage(ElibPage):
 
@@ -23,11 +24,21 @@ class InterviewPage(ElibPage):
         征订书目导入功能
         :return:
         """
-        # TODO 上传文件传值不正确
-        return self.rp.sendRequest('FILE', self.getUrl() + '/service/api/e/interview/file/zdsmI', {
-            'Content-Disposition: form-data; name="%s"; filename="%s" Content-Type:%s\r\n' % ('excel', 'list.xls', 'application/vnd.ms-excel'): 'file',
-            'Content-Disposition: form-data;name="%s"' % 'userToken': self.getUserToken()
-        })
+        with open('D:\Cache\Project\TJProject\list.xls', mode="rb+") as f:  # 打开文件
+            file = {
+                "excel": ('list.xls', f.read()),  # 引号的file是接口的字段，后面的是文件的名称、文件的内容
+                "userToken": self.getUserToken(),  # 如果接口中有其他字段也可以加上
+            }
+        res = self.rp.sendRequest('FILE', self.getUrl() + '/service/api/e/interview/file/zdsmI', file).json()
+        r = self.rp.sendRequest('FILE', self.getUrl() + '/service/api/e/interview/zdsm/import/main', {
+            'userToken': self.getUserToken(),
+            'path': res['data']['path'],
+            'marcfbid': self.getFblxid(),
+            'zdpcid': self.getZdpcid()[0],
+            'isbn': 'ISBN,0',
+            'ztming': '正题名,0'
+        }).json()
+        return r['message']
 
     def subscriptionBooks(self):
         """
@@ -250,4 +261,4 @@ class InterviewPage(ElibPage):
 
 
 if __name__ == '__main__':
-    print(InterviewPage('cwq', '84548081').directVerify())
+    print(InterviewPage('cwq', '84548081').subscriptionBooksImport())

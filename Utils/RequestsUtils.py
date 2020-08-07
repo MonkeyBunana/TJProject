@@ -38,11 +38,17 @@ class RequestsPage:
                 self.headers['Content-Type'] = 'application/json'
                 return self.re.post(url=url, data=data, headers=self.headers)
             if method == "FILE":
-                data['file'] = ('list.xls', open('D:\Cache\Project\TJProject\list.xls', 'rb').read())
                 encode_data = encode_multipart_formdata(data)
-                data = encode_data[0]
+                file_data = encode_data[0]
+                # b'--c0c46a5929c2ce4c935c9cff85bf11d4\r\nContent-Disposition: form-data; name="file"; filename="1.txt"\r\nContent-Type: text/plain\r\n\r\n...........--c0c46a5929c2ce4c935c9cff85bf11d4--\r\n
                 self.headers['Content-Type'] = encode_data[1]
-                return self.re.post(url=url, data=data, headers=self.headers, verify=False)
+                # headers_from_data = {
+                #     "Content-Type": encode_data[1],
+                #     # "Authorization": token
+                # }
+                # token是登陆后给的值，如果你的接口中头部不需要上传字段，就不用写，只要前面的就可以
+                # 'Content-Type': 'multipart/form-data; boundary=c0c46a5929c2ce4c935c9cff85bf11d4'，这里上传文件用的是form-data,不能用json
+                return requests.post(url=url, data=file_data, headers=self.headers)
         except Exception as e:
             print(e)
 
