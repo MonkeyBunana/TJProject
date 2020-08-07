@@ -2,10 +2,6 @@
 from Utils.ElibUtils import ElibPage
 from Utils.ExcelUtils import ExcelPage
 
-from Model.Func.Circulation import CirculationPage
-from Model.Func.Interview import InterviewPage
-from Model.Func.Webopac import WebopacPage
-
 class LoginVerifyPage:
 
     def __init__(self):
@@ -20,13 +16,7 @@ class LoginVerifyPage:
             res = ElibPage(zh, mm).getLoginMsg()
             if res['message'] == '操作成功':
                 if res['data']['user']['libName'] == g:
-                    # print()
                     print(g + " 的账户：" + res['data']['user']['username'] + " 登录成功")
-                    # print("--------------- 其他测试开始 ---------------")
-                    # print(CirculationPage(zh, mm).BRRManage_1())
-                    # print(CirculationPage(zh, mm).BRRManage_2())
-                    # print("--------------- 其他测试结束 ---------------")
-                    # print()
                 else:
                     print("用户登录的成员馆：" + res['data']['user']['libName'] + " 和excel中的成员馆：" + g + " 不符")
             else:

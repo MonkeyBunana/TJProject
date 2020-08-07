@@ -3,17 +3,16 @@ from Utils.RequestsUtils import RequestsPage
 from Utils.ElibUtils import ElibPage
 
 
-class WebopacPage:
+class WebopacPage(ElibPage):
 
-    def __init__(self, username, userpwd):
+    def __init__(self, loginName, loginPwd):
+        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
-        self.ep = ElibPage(username, userpwd)
-
 
     def opacManage(self):
         print(self.simpleSearch())
         print(self.advanceSearch())
-        # print(self.opacReaderLogin())
+        print(self.opacReaderLogin())
 
 
 
@@ -40,7 +39,7 @@ class WebopacPage:
         :param subCategory: 分类 第三层，比如（A12）
         :return: String 操作成功
         """
-        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/p/search/advanceSearch', {
+        res = self.rp.sendRequest('POST', self.getUrl() + '/service/api/p/search/advanceSearch', {
             'size': size,
             'current': current,
             searchItem: searchValue,
@@ -49,7 +48,7 @@ class WebopacPage:
             'haveCollection': haveCollection,
             'sortField': sortField,
             'yzhong': '',       # 语种，但是中英文都是空值
-            'libIds': self.ep.getLibid(),   # 馆id
+            'libIds': self.getLibid(),   # 馆id
             'cbYear': cbYear,
             'cbYear2': cbYear2,
             'leixing': leixing,
@@ -92,7 +91,7 @@ class WebopacPage:
         :param assemblyType2: or / and
         :return: String
         """
-        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/p/search/advanceSearch', {
+        res = self.rp.sendRequest('POST', self.getUrl() + '/service/api/p/search/advanceSearch', {
             'size': size,
             'current': current,
             'classify': classify,
@@ -103,7 +102,7 @@ class WebopacPage:
             'haveCollection': haveCollection,
             'sortField': sortField,
             'yzhong': '',   # 语种
-            'libIds': self.ep.getLibid(),
+            'libIds': self.getLibid(),
             'cbYear': cbYear,
             'cbYear2': cbYear2,
             'leixing': leixing,
@@ -121,21 +120,21 @@ class WebopacPage:
         else:
             print('查询失败')
 
-    def opacReaderLogin(self, loginName, loginPwd):
+    def opacReaderLogin(self):
         # 获取读者token
-        res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/p/login/readerLogin', {
-            'loginName': loginName,
-            'loginPwd': loginPwd
+        res = self.rp.sendRequest('POST', self.getUrl() + '/service/api/p/login/readerLogin', {
+            'loginName': self.getReaderList()['data']['dataList'][0]['dzzhao'],
+            'loginPwd': self.getReaderList()['data']['dataList'][0]['mima']
         }).json()
         # 获取读者信息
-        r1 = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/opac/reader/barcode', {
+        r1 = self.rp.sendRequest('POST', self.getUrl() + '/service/api/opac/reader/barcode', {
             'readerToken': res['data']['readerToken']
         }).json()
-        r2 = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/opac/book/list/nowcheckout', {
+        r2 = self.rp.sendRequest('POST', self.getUrl() + '/service/api/opac/book/list/nowcheckout', {
             'readerToken': res['data']['readerToken']
         }).json()
         print(r1)
 
 
 if __name__ == '__main__':
-    print(WebopacPage().opacReaderLogin('DZBOSS', '123456'))
+    print(WebopacPage('cwq', '84548081').opacManage())
