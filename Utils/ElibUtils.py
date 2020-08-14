@@ -2,84 +2,24 @@
 import random
 from Utils.RequestsUtils import RequestsPage
 from Utils.AESUtils import AesPage
+from Utils.ExceptionUtils import ExceptionPage
+from sys import _getframe
 
 
 class ElibPage(object):
 
-    __instance = None
+    # __instance = None
 
     # python3 单例模式
-    def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super(ElibPage, cls).__new__(cls)
-        return cls.__instance
+    # def __new__(cls, *args, **kwargs):
+    #     if cls.__instance is None:
+    #         cls.__instance = super(ElibPage, cls).__new__(cls)
+    #     return cls.__instance
 
     def __init__(self, loginName, loginPwd, isAes='yes'):
         self.rp = RequestsPage()
-
-        self.baseUrl = 'http://192.168.1.120:8080'
-        if isAes == 'yes':
-            self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
-                'loginName': loginName,
-                'loginPwd': AesPage().AES_encrypt(loginPwd)
-            }).json()
-        else:
-            self.loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
-                'loginName': loginName,
-                'loginPwd': loginPwd
-            }).json()
-
-        if self.getLoginMsg()['code'] == 0:
-            self.gysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {
-                'userToken': self.getUserToken(),
-                'flag': 1,
-                'pageSize': 1000,
-                'pageNumber': 1,
-                'libId': self.getLibid()
-            }).json()
-            self.ltlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {
-                'userToken': self.getUserToken(),
-                'pageSize': 1000,
-                'pageNumber': 1,
-                'libId': self.getLibid()
-            }).json()
-            self.czId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {
-                'userToken': self.getUserToken(),
-                'state': -1,
-                'pageSize': 1000,
-                'pageNumber': 1,
-                'libId': self.getLibid()
-            }).json()
-            self.batchId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {
-                'userToken': self.getUserToken(),
-                'flag': 1,
-                'pageSize': 1000,
-                'pageNumber': 1,
-                'batchStatus': '正常',
-                'libId': self.getLibid()
-            }).json()
-            self.registerPlaceId = self.rp.sendRequest("POST",
-                                                       self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list',
-                                                       {
-                                                           'userToken': self.getUserToken(),
-                                                           'pageSize': 1000,
-                                                           'pageNumber': 1,
-                                                           'libId': self.getLibid()
-                                                       }).json()
-            self.dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList',
-                                              {
-                                                  'userToken': self.getUserToken(),
-                                                  'pageSize': 1000,
-                                                  'pageNumber': 1,
-                                                  'libId': self.getLibid()
-                                              }).json()
-            self.marcFBId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/marcFb', {
-                'userToken': self.getUserToken(),
-                'libId': self.getLibid()
-            }).json()
-            self.zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
-                'userToken': self.getUserToken()
-            }).json()
+        self.baseUrl = 'http://192.168.1.47:8080'
+        self.msg = self.getLoginMsg(loginName, loginPwd, isAes)
 
     def getUrl(self):
         """
@@ -93,81 +33,128 @@ class ElibPage(object):
         获取 管理员用户名
         :return: String
         """
-        return self.loginMsg['data']['user']['usercode']
+        return self.msg['data']['user']['usercode']
 
     def getUserToken(self):
         """
         获取 token
         :return: String
         """
-        return self.loginMsg['data']['userToken']
+        return self.msg['data']['userToken']
 
     def getLibid(self):
         """
         获取馆ID
         :return: String
         """
-        return self.loginMsg['data']['user']['libId']
+        return self.msg['data']['user']['libId']
 
-    def getLoginMsg(self):
+    def getLoginMsg(self, loginName, loginPwd, isAes='yes'):
         """
         获取登录用户信息
         :return:
         """
-        return self.loginMsg
+        if isAes == 'yes':
+            # yes为密码加密
+            loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
+                'loginName': loginName,
+                'loginPwd': AesPage().AES_encrypt(loginPwd)
+            }).json()
+        else:
+            loginMsg = self.rp.sendRequest("POST", self.baseUrl + '/service/api/p/login/userLogin', {
+                'loginName': loginName,
+                'loginPwd': loginPwd
+            }).json()
+        return loginMsg
 
-    def getGysid(self):
+
+    def getGysid(self, isMore=True):
         """
         获取供应商ID （暂时先只取第一个供应商）
-        :return: String
+        :return: String / Tuple
         """
-        return self.gysId['data']['dataList'][0]['gysId']
-
-    def getLtlxid(self):
-        """
-        获取流通类型ID （暂时先只取第一个流通类型）
-        :return: String
-        """
-        return self.ltlxId['data']['dataList'][0]['ltlxid']
-
-    def getCzid(self):
-        """
-        获取藏址ID
-        :return: Tuple
-        """
-        czList = list()
-        for cz in self.czId['data']['dataList']:
-            czList.append(cz['czid'])
-        return tuple(czList)
-
-    def getYslxid(self):
-        """ 设置 -> 预算类型
-        获取预算类型ID  （暂时先只取第一个预算）
-        :return: String
-        """
-        yslxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {
+        try:
+            gysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/gysFind', {
             'userToken': self.getUserToken(),
-            'flag': 0,
+            'flag': 1,
             'pageSize': 1000,
             'pageNumber': 1,
             'libId': self.getLibid()
         }).json()
-        # code 为 0，返回正确
-        if yslxId['code'] == 0:
-            # data 存在于 response 中
-            if 'data' in yslxId:
-                if len(yslxId['data']['dataList']) == 0:
-                    return '设置 -> 预算类型 -> 查询：缺少默认值'
-                return yslxId['data']['dataList'][0]['yslxid']
-            else:
-                return '设置 -> 预算类型 -> 查询：data not found'
-        else:
-            return '采访 -> 预算类型 -> 查询：%s' % yslxId
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                gysId['message']
+            ).ErrorTemplate(gysId, 'gysId', isMore)
+        except Exception as e:
+            print(e)
 
-    def getYsid(self):
+    def getLtlxid(self, isMore=True):
+        """
+        获取流通类型ID
+        :return: String / Tuple
+        """
+        try:
+            ltlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/flowTypeList', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                ltlxId['message']
+            ).ErrorTemplate(ltlxId, 'ltlxid', isMore)
+        except Exception as e:
+            print(e)
+
+    def getCzid(self, isMore=True):
+        """
+        获取藏址ID
+        :return: String / Tuple
+        """
+        try:
+            czId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/czFind', {
+                'userToken': self.getUserToken(),
+                'state': -1,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                czId['message']
+            ).ErrorTemplate(czId, 'czid', isMore)
+        except Exception as e:
+            print(e)
+
+    def getYslxid(self, isMore=True):
+        """ 设置 -> 预算类型
+        获取预算类型ID  （暂时先只取第一个预算）
+        :return: String / Tuple
+        """
+        try:
+            yslxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/yslxFind', {
+                'userToken': self.getUserToken(),
+                'flag': 0,
+                'pageSize': 1000,
+                'pageNumber': 1,
+                'libId': self.getLibid()
+            }).json()
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                yslxId['message']
+            ).ErrorTemplate(yslxId, 'yslxid', isMore)
+        except Exception as e:
+            print(e)
+
+    def getYsid(self, isMore=True):
         """ 设置 -> 预算管理
         获取预算管理ID
-        :return: String
+        :return: String / Tuple
         """
         ysId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/ysFind', {
             'userToken': self.getUserToken(),
@@ -176,67 +163,123 @@ class ElibPage(object):
             'pageNumber': 1,
             'libId': self.getLibid()
         }).json()
-        # code 为 0，返回正确
-        if ysId['code'] == 0:
-            # data 存在于 response 中
-            if 'data' in ysId:
-                if len(ysId['data']['dataList']) == 0:
-                    return '设置 -> 预算管理 -> 查询：缺少默认值'
-                return ysId['data']['dataList'][0]['ysid']
-            else:
-                return '设置 -> 预算管理 -> 查询：data not found'
-        else:
-            return '采访 -> 预算管理 -> 查询：%s' % ysId
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                ysId['message']
+            ).ErrorTemplate(ysId, 'ysid', isMore)
+        except Exception as e:
+            print(e)
 
-    def getBatchid(self):
+    def getBatchid(self, isMore=True):
         """
         获取编目批次ID
         :return: Tuple
         """
-        batchList = list()
-        for batch in self.batchId['data']['dataList']:
-            batchList.append(batch['batchId'])
-        return tuple(batchList)
+        batchId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/catalog/other/searchBatch', {
+            'userToken': self.getUserToken(),
+            'flag': 1,
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'batchStatus': '正常',
+            'libId': self.getLibid()
+        }).json()
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                batchId['message']
+            ).ErrorTemplate(batchId, 'batchId', isMore)
+        except Exception as e:
+            print(e)
 
-    def getRegisterPlaceId(self):
+
+    def getRegisterPlaceId(self, isMore=True):
         """
         获取办证地点ID
-        :return: Tuple
+        :return: Tuple / String
         """
-        registerPlaceList = list()
-        for registerPlace in self.registerPlaceId['data']['dataList']:
-            registerPlaceList.append(registerPlace['registerPlaceId'])
-        return tuple(registerPlaceList)
+        registerPlaceId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/setup/param/registerPlace/list', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                registerPlaceId['message']
+            ).ErrorTemplate(registerPlaceId, 'registerPlaceId', isMore)
+        except Exception as e:
+            print(e)
 
-    def getDzlxid(self, ty=None):
+    def getDzlxid(self, isMore=True):
         """
         获取读者类型
         :return: Tuple / String
         """
-        dzlxList = list()
-        if ty == 'more':
-            for i in self.dzlxId['data']['dataList']:
-                dzlxList.append(i['dzlxid'])
-            return tuple(dzlxList)
-        else:
-            return self.dzlxId['data']['dataList'][0]['dzlxid']
+        dzlxId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/sys/flowParameters/readerTypeList', {
+            'userToken': self.getUserToken(),
+            'pageSize': 1000,
+            'pageNumber': 1,
+            'libId': self.getLibid()
+        }).json()
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                dzlxId['message']
+            ).ErrorTemplate(dzlxId, 'dzlxid', isMore)
+        except Exception as e:
+            print(e)
 
-    def getFblxid(self):
+    def getFblxid(self, isMore=True):
         """
         获取分编类型
-        :return: String
+        :return: Tuple / String
         """
-        return self.marcFBId['data']['list'][0]['marcfbid']
+        marcFBId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/marcFb', {
+            'userToken': self.getUserToken(),
+            'libId': self.getLibid()
+        }).json()
+        marcFBList = list()
+        try:
+            if marcFBId['code'] == 0:
+                # data 存在于 response 中
+                if 'data' in marcFBId:
+                    for data in marcFBId['data']['list']:
+                        marcFBList.append(data['marcfbid'])
+                    if isMore is True:
+                        return marcFBList
+                    else:
+                        return marcFBList[0]
 
-    def getZdpcid(self):
+            # return ExceptionPage(
+            #     _getframe().f_code.co_filename,
+            #     _getframe().f_code.co_name,
+            #     marcFBId['message']
+            # ).ErrorTemplate(marcFBId, 'marcfbid', isMore)
+        except Exception as e:
+            print(e)
+
+    def getZdpcid(self, isMore=True):
         """
         获取征订目录
-        :return: Tuple
+        :return: Tuple / String
         """
-        zdpcList = list()
-        for i in self.zdpcId['data']:
-            zdpcList.append(i['zdpcid'])
-        return tuple(zdpcList)
+        zdpcId = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/zdpcList', {
+            'userToken': self.getUserToken()
+        }).json()
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                zdpcId['message']
+            ).ErrorTemplate(zdpcId, 'zdpcid', isMore)
+        except Exception as e:
+            print(e)
 
     def getYdd(self, yddDaima='daimaCs', yddIsWork=True):
         """ 采访 -> 预订单管理
@@ -253,27 +296,38 @@ class ElibPage(object):
             'flag': 1
         }).json()
         yddList = list()
-        # code 为 0，返回正确
-        if ydd['code'] == 0:
-            # data 存在于 response 中
-            if 'data' in ydd:
-                # 如果 dataList 为空，则添加并更新数据
-                if len(ydd['data']['dataList']) == 0:
-                    self.addYdd(yddDaima, yddIsWork)
-                    ydd = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {
-                        'userToken': self.getUserToken(),
-                        'pageNumber': 1,
-                        'pageSize': 50,
-                        'flag': 1
-                    }).json()
-                # 循环 dataList, 获取所有 ydpcid, 并返回一个元祖
-                for i in ydd['data']['dataList']:
-                    yddList.append(i['ydpcid'])
-                return tuple(yddList)
+        try:
+            # code 为 0，返回正确
+            if ydd['code'] == 0:
+                # data 存在于 response 中
+                if 'data' in ydd:
+                    # 如果 dataList 为空，则添加并更新数据
+                    if len(ydd['data']['dataList']) == 0:
+                        self.addYdd(yddDaima, yddIsWork)
+                        ydd = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/interview/yd/pcSearch', {
+                            'userToken': self.getUserToken(),
+                            'pageNumber': 1,
+                            'pageSize': 50,
+                            'flag': 1
+                        }).json()
+                    # 循环 dataList, 获取所有 ydpcid, 并返回一个元祖
+                    for i in ydd['data']['dataList']:
+                        yddList.append(i['ydpcid'])
+                    return tuple(yddList)
+                else:
+                    raise ExceptionPage(
+                        _getframe().f_code.co_filename,
+                        _getframe().f_code.co_name,
+                        'data 字段找不到'
+                    )
             else:
-                return '采访 -> 预订单管理 -> 查询：data not found'
-        else:
-            return '采访 -> 预订单管理 -> 查询：%s' % ydd
+                raise ExceptionPage(
+                    _getframe().f_code.co_filename,
+                    _getframe().f_code.co_name,
+                    ydd['message']
+                )
+        except Exception as e:
+            print(e)
 
     def addYdd(self, daima='daimaCs', isWork=True):
         """ 采访 -> 预订单管理
@@ -286,8 +340,8 @@ class ElibPage(object):
             'userToken': self.getUserToken(),
             'daima': daima,
             'libid': self.getLibid(),
-            'gysid': self.getGysid(),
-            'ysid': self.getYsid(),
+            'gysid': self.getGysid(isMore=False),
+            'ysid': self.getYsid(isMore=False),
             'isWork': isWork
         }).json()
 
@@ -306,27 +360,38 @@ class ElibPage(object):
             'flag': 1
         }).json()
         ysdList = list()
-        # code 为 0，返回正确
-        if ysd['code'] == 0:
-            # data 存在于 response 中
-            if 'data' in ysd:
-                # 如果 dataList 为空，则添加并更新数据
-                if len(ysd['data']['dataList']) == 0:
-                    self.addYsd(ysdDaima, ysdIsWork)
-                    ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {
-                        'userToken': self.getUserToken(),
-                        'pageNumber': 1,
-                        'pageSize': 50,
-                        'flag': 1
-                    }).json()
-                # 循环 dataList, 获取所有 yspcid, 并返回一个元祖
-                for i in ysd['data']['dataList']:
-                    ysdList.append(i['yspcid'])
-                return tuple(ysdList)
+        try:
+            # code 为 0，返回正确
+            if ysd['code'] == 0:
+                # data 存在于 response 中
+                if 'data' in ysd:
+                    # 如果 dataList 为空，则添加并更新数据
+                    if len(ysd['data']['dataList']) == 0:
+                        self.addYsd(ysdDaima, ysdIsWork)
+                        ysd = self.rp.sendRequest('POST', self.baseUrl + '/service/api/e/interview/ys/pcSearch', {
+                            'userToken': self.getUserToken(),
+                            'pageNumber': 1,
+                            'pageSize': 50,
+                            'flag': 1
+                        }).json()
+                    # 循环 dataList, 获取所有 yspcid, 并返回一个元祖
+                    for i in ysd['data']['dataList']:
+                        ysdList.append(i['yspcid'])
+                    return tuple(ysdList)
+                else:
+                    raise ExceptionPage(
+                        _getframe().f_code.co_filename,
+                        _getframe().f_code.co_name,
+                        'data 字段找不到'
+                    )
             else:
-                return '采访 -> 验收单管理 -> 查询：data not found'
-        else:
-            return '采访 -> 验收单管理 -> 查询：%s' % ysd
+                raise ExceptionPage(
+                    _getframe().f_code.co_filename,
+                    _getframe().f_code.co_name,
+                    ysd['message']
+                )
+        except Exception as e:
+            print(e)
 
     def addYsd(self, daima='daimaCs', isWork=True):
         """ 采访 -> 验收单管理
@@ -339,8 +404,8 @@ class ElibPage(object):
             'userToken': self.getUserToken(),
             'daima': daima,
             'libid': self.getLibid(),
-            'gysid': self.getGysid(),
-            'ysid': self.getYsid(),
+            'gysid': self.getGysid(isMore='NO'),
+            'ysid': self.getYsid(isMore='NO'),
             'isWork': isWork
         }).json()
 
@@ -365,32 +430,26 @@ class ElibPage(object):
                 'zdsmid': zdsmid
             }).json()
 
-    def getHbList(self, hbcode='CNY'):
+
+    def getHbList(self, isMore=True):
         """
         货币列表 CNY
-        :param hbcode: 输入你要的货币code，输出相应货币id
+        :param isMore: YES输出元祖，NO输出字符串
         :return: String
         """
         hb = self.rp.sendRequest("POST", self.baseUrl + '/service/api/e/parameter/hbList', {
             'userToken': self.getUserToken(),
             'libId': self.getLibid()
         }).json()
-        # code 为 0，返回正确
-        if hb['code'] == 0:
-            # data 存在于 response 中
-            if 'data' in hb:
-                # 如果 dataList 为空，则添加并更新数据
-                if len(hb['data']) == 0:
-                    return '设置 -> 货币汇率 -> 查询：缺少默认值'
-                for i in hb['data']:
-                    if i['hbcode'] == hbcode:
-                        return i['hbid']
-                    else:
-                        return '设置 -> 货币汇率 -> 查询：找不到 %s 这个hbcode'
-            else:
-                return '设置 -> 货币汇率 -> 查询：data not found'
-        else:
-            return '设置 -> 货币汇率 -> 查询：%s' % hb
+        try:
+            return ExceptionPage(
+                _getframe().f_code.co_filename,
+                _getframe().f_code.co_name,
+                hb['message']
+            ).ErrorTemplate(hb, 'hbid', isMore)
+
+        except Exception as e:
+            print(e)
 
     def getReaderList(self, ztai='正常', qkuan=0):
         if qkuan == 0 and qkuan == 1:
@@ -429,4 +488,4 @@ class ElibPage(object):
 
 
 if __name__ == '__main__':
-    print(ElibPage('zhonglilong', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D').getDzlxid('more'))
+    print(ElibPage('TJ', 'Td123456').getHbList(isMore=True))

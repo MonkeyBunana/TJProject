@@ -31,8 +31,10 @@ class RequestsPage:
         """
         try:
             if method == "GET":
+                self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
                 return self.re.get(url=url, data=data, headers=self.headers)
             if method == "POST":
+                self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
                 return self.re.post(url=url, data=data, headers=self.headers)
             if method == "JSON":
                 self.headers['Content-Type'] = 'application/json'

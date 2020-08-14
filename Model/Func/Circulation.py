@@ -2,13 +2,11 @@
 from Utils.RequestsUtils import RequestsPage
 from Utils.ElibUtils import ElibPage
 
-
-class CirculationPage(ElibPage):
+class CirculationPage:
 
     def __init__(self, loginName, loginPwd):
-        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
-
+        self.ep = ElibPage(loginName, loginPwd)
 
 
     def BRRManage(self):
@@ -29,11 +27,11 @@ class CirculationPage(ElibPage):
     def getReader(self):
         readerList = list()
         # for i in self.ep.getDzlxid('more'):
-        for data in self.getReaderList()['data']['dataList']:
+        for data in self.ep.getReaderList()['data']['dataList']:
             # isOverTime = False
             # 判断是否超借
-            r = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/flow/doclx/curBro', {
-                'userToken': self.getUserToken(),
+            r = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/curBro', {
+                'userToken': self.ep.getUserToken(),
                 'readerBarcode': data['dzzhao']
             }).json()
             if len(r['data']) == 0:
@@ -54,23 +52,23 @@ class CirculationPage(ElibPage):
         readerList = list()
         for n in self.rp.getRandomReaderID():
             # 发送添加读者的请求
-            res = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/flow/readerManager/readerManagerSave', {
-                "userToken": self.getUserToken(),
+            res = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/readerManager/readerManagerSave', {
+                "userToken": self.ep.getUserToken(),
                 "dzzhao": n,      # 读者证号
                 "xming": n,       # 姓名
                 "ztai": "正常",       # 状态
                 "mima": "123456",       # 密码
-                "dzlxid": self.getDzlxid(),       # 读者类型
+                "dzlxid": self.ep.getDzlxid(isMore=False),       # 读者类型
                 "jzrqi": "2020-10-31",      # 截止日期
                 "qyrqi": "2020-08-01",      # 启用日期
-                "libid": self.getLibid(),        # 馆id
+                "libid": self.ep.getLibid(),        # 馆id
                 "smrz": "0",
                 "zhuanye": "其他",
                 "zhiwu": "无",
                 "zcheng": "无",
                 "xueli": "其他",
-                "xingbie": self.getXingbie(),
-                "yajin": "0",
+                "xingbie": self.ep.getXingbie(),
+                "yajin": "100",
                 "zhiye": "其他",
                 "jycshu": "0",
                 "yycshu": "0",
@@ -78,7 +76,7 @@ class CirculationPage(ElibPage):
                 "wzcshu": "0",
                 "gjhjcshu": "0",
                 "qkuan": "0",
-                "dzdw": self.rp.randomValue(self.getDzdw())
+                "dzdw": self.rp.randomValue(self.ep.getDzdw())
                 # "registerPlaceId": self.rp.randomValue(self.ep.getRegisterPlaceId())       # 办证地点
             }).json()
             if res['message'] == '操作成功!':
@@ -94,17 +92,17 @@ class CirculationPage(ElibPage):
         :param state: 借 / 续 / 还
         :return: String
         """
-        res_sm = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/catalog/catalogue/list', {
-            'userToken': self.getUserToken(),
-            'libid': self.getLibid(),
+        res_sm = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/catalog/catalogue/list', {
+            'userToken': self.ep.getUserToken(),
+            'libid': self.ep.getLibid(),
             'pageNumber': 1,
             'pageSize': 1000,
             'userType': 1,
             'dateType': 1
         }).json()
         for data in res_sm['data']['dataList']:
-            res_gc = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/book/listByCatalogue', {
-                'userToken': self.getUserToken(),
+            res_gc = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/book/listByCatalogue', {
+                'userToken': self.ep.getUserToken(),
                 'pageNumber': 1,
                 'pageSize': 1000,
                 'marctyId': data['marctyid'],
@@ -114,22 +112,22 @@ class CirculationPage(ElibPage):
             if res_gc['data']['count'] != 0:
                 for d in res_gc['data']['page']['dataList']:
                     if d['ztai'] == '在馆' and state == '借':
-                        broResult = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/flow/doclx/bro', {
-                            'userToken': self.getUserToken(),
+                        broResult = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/bro', {
+                            'userToken': self.ep.getUserToken(),
                             'readerBarcode': reader,
                             'bookBarcode': d['tiaoma']
                         }).json()
                         return broResult['message']     # message=借阅成功
                     elif d['ztai'] == '借出' and state == '续':
-                        renResult = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/flow/doclx/ren', {
-                            'userToken': self.getUserToken(),
+                        renResult = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/ren', {
+                            'userToken': self.ep.getUserToken(),
                             'readerBarcode': reader,
                             'bookBarcode': d['tiaoma']
                         }).json()
                         return renResult['message']  # message=续借成功！
                     elif d['ztai'] == '借出' and state == '还':
-                        retResult = self.rp.sendRequest('POST', self.getUrl() + '/service/api/e/flow/doclx/ret', {
-                            'userToken': self.getUserToken(),
+                        retResult = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/ret', {
+                            'userToken': self.ep.getUserToken(),
                             'isSameCz': 1,
                             'bookBarcode': d['tiaoma']
                         }).json()
@@ -142,4 +140,4 @@ class CirculationPage(ElibPage):
 
 
 if __name__ == '__main__':
-    CirculationPage('cwq', '84548081').BRRManage()
+    CirculationPage('TJ', 'Td123456').BRRManage()
