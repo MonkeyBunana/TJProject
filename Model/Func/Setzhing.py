@@ -6,11 +6,11 @@ from Utils.ElibUtils import ElibPage
 from Utils.RequestsUtils import RequestsPage
 
 
-class SetzhingPage(ElibPage):
+class SetzhingPage:
 
     def __init__(self, loginName, loginPwd):
-        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
+        self.ep = ElibPage(loginName, loginPwd)
 
     def BookmanForQuery(self):
         """
@@ -24,11 +24,14 @@ class SetzhingPage(ElibPage):
             'pageSize': 15,
             'flag': 1
         }).json()
-        if res['message'] == '操作成功':
-            print("书商管理书目列表查询成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功':
+                print("书商管理书目列表查询成功")
+                # pass
+            else:
+                print(self.ep.getUsercode(), "书商管理书目列表查询出错")
         else:
-            print(self.ep.getUsercode(), "书商管理书目列表查询出错")
+            print(self.ep.getUsercode(), "书商管理书目列表查询出错", res)
 
     def BookmanForFoundgysId(self):
         """
@@ -42,11 +45,14 @@ class SetzhingPage(ElibPage):
             'pageSize': 15,
             'flag': 1
         }).json()
-        if res['message'] == '操作成功':
-            print(res['data']['dataList'][0])
-            return res['data']['dataList'][0]['gysId']
+        if 'message' in res:
+            if res['message'] == '操作成功':
+                # print(res['data']['dataList'][0])
+                return res['data']['dataList'][0]['gysId']
+            else:
+                print(self.ep.getUsercode(), "获取书商列表第一条数据书商ID出错")
         else:
-            print(self.ep.getUsercode(), "获取书商列表第一条数据书商ID出错")
+            print(self.ep.getUsercode(), "获取书商列表第一条数据书商ID出错", res)
 
     def BookmanForFoundcygname(self):
         """
@@ -60,10 +66,13 @@ class SetzhingPage(ElibPage):
             'pageSize': 15,
             'flag': 1
         }).json()
-        if res['message'] == '操作成功':
-            return res['data']['dataList'][0]['cygName']
+        if 'message' in res:
+            if res['message'] == '操作成功':
+                return res['data']['dataList'][0]['cygName']
+            else:
+                print(self.ep.getUsercode(), "获取书商列表第一条数据成员馆出错")
         else:
-            print(self.ep.getUsercode(), "获取书商列表第一条数据成员馆出错")
+            print(self.ep.getUsercode(), "获取书商列表第一条数据成员馆出错", res)
 
     def BookmanForAdd(self):
         """
@@ -78,11 +87,13 @@ class SetzhingPage(ElibPage):
             'gysStat': '正常',
             'gysCred': '0'
         }).json()
-        if res['message'] == '操作成功!':
-            print("新增书商成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("新增书商成功")
+            else:
+                print(self.ep.getUsercode(), "新增书商出错")
         else:
-            print(self.ep.getUsercode(), "新增书商失败")
+            print(self.ep.getUsercode(), "新增书商出错", res)
 
     def BookmanForMod(self, g_data, c_data):
         """
@@ -99,12 +110,16 @@ class SetzhingPage(ElibPage):
             'gysCred': 0,
             'cygName': c_data
         }).json()
-        if res['message'] == '操作成功!':
-            print("修改书商成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("修改书商成功")
+            else:
+                print(res)
+                print(self.ep.getUsercode(), "修改书商出错")
         else:
-            print(res)
-            print(self.ep.getUsercode(), "修改书商失败")
+            print(self.ep.getUsercode(), "修改书商出错", res)
+
+
 
     def BookmanForDel(self, g_data):
         """
@@ -115,19 +130,24 @@ class SetzhingPage(ElibPage):
             'userToken': self.ep.getUserToken(),
             'gysId': g_data
         }).json()
-        if res['message'] == '操作成功!':
-            print("删除书商成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("删除书商成功")
+            else:
+                print(res)
+                print(self.ep.getUsercode(), "删除书商出错")
         else:
-            print(res)
-            print(self.ep.getUsercode(), "删除书商失败")
+            print(self.ep.getUsercode(), "删除书商出错", res)
+
+
 
 if __name__ == '__main__':
-    SetzhingPage().BookmanForQuery()
-    SetzhingPage().BookmanForAdd()
-    gysId_data = SetzhingPage().BookmanForFoundgysId()
-    dcygname_data = SetzhingPage().BookmanForFoundcygname()
-    SetzhingPage().BookmanForMod(gysId_data, dcygname_data)
-    # SetzhingPage().BookmanForDel(gysId_data)
+    shushang = SetzhingPage('hoxx', '123456')
+    shushang.BookmanForQuery()
+    shushang.BookmanForAdd()
+    gysId_data = shushang.BookmanForFoundgysId()
+    dcygname_data = shushang.BookmanForFoundcygname()
+    shushang.BookmanForMod(gysId_data, dcygname_data)
+    # shushang.BookmanForDel(gysId_data)
 
 

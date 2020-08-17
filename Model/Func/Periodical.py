@@ -4,11 +4,11 @@ from Utils.ElibUtils import ElibPage
 import json
 
 
-class PeriodicalPage(ElibPage):
+class PeriodicalPage:
 
     def __init__(self, loginName, loginPwd):
-        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
+        self.ep = ElibPage(loginName, loginPwd)
 
     def PeriodicalForQuery(self):
         """
@@ -22,11 +22,14 @@ class PeriodicalPage(ElibPage):
             'pageSize': 15,
             'isQk': 1
         }).json()
-        if res['message'] == '操作成功':
-            print("期刊书目列表查询成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功':
+                print("期刊书目列表查询成功")
+                # pass
+            else:
+                print("期刊书目列表查询出错")
         else:
-            print("期刊书目列表查询成功")
+            print("期刊书目列表查询出错", res)
 
     def PeriodicalForAdd(self):
         """
@@ -34,7 +37,7 @@ class PeriodicalPage(ElibPage):
         :return: None
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": self.ep.getFblxid(),
+                "marcfbid": self.ep.getFblxid(isMore=False),
                 "isQk": 1,
                 "simpleList": [
                     {"fieldName": "分类号", "marcField": "690a", "content": None, "isEmpty": 1, "sort": 1},
@@ -80,11 +83,14 @@ class PeriodicalPage(ElibPage):
 
         res = self.rp.sendRequest('JSON', self.ep.getUrl() + '/service/api/e/catalog/catalogue/simple/save',
                                   json.dumps(data)).json()
-        if res['message'] == '操作成功!':
-            print("新增期刊成功")
-            return res['data']['marctyid']
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("新增期刊成功")
+                return res['data']['marctyid']
+            else:
+                print("新增期刊出错")
         else:
-            print("新增期刊出错")
+            print("新增期刊出错", res)
 
     def PeriodicalForMod(self, cata):
         """
@@ -93,7 +99,7 @@ class PeriodicalPage(ElibPage):
         :return: None
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": self.ep.getFblxid(),
+                "marcfbid": self.ep.getFblxid(isMore=False),
                 "marctyid": cata,
                 "isQk": 1,
                 "simpleList": [
@@ -139,10 +145,13 @@ class PeriodicalPage(ElibPage):
                 }
         res = self.rp.sendRequest('JSON', self.ep.getUrl() + '/service/api/e/catalog/catalogue/simple/save',
                                   json.dumps(data)).json()
-        if res['message'] == '操作成功!':
-            print("修改期刊成功")
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("修改期刊成功")
+            else:
+                print("修改期刊出错")
         else:
-            print("修改期刊出错")
+            print("修改期刊出错", res)
 
     def PeriodicalForDel(self, cata):
         """
@@ -154,15 +163,19 @@ class PeriodicalPage(ElibPage):
             'userToken': self.ep.getUserToken(),
             'marctyIds': cata
         }).json()
-        if res['message'] == '操作成功！':
-            print("删除期刊成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("删除期刊成功")
+                # pass
+            else:
+                print("删除期刊出错")
         else:
-            print("删除期刊成功")
+            print("删除期刊出错", res)
 
 
 if __name__ == '__main__':
-    PeriodicalPage().PeriodicalForQuery()  # 期刊书目列表功能验证
-    cata = PeriodicalPage().PeriodicalForAdd()  # 新增期刊功能验证
-    PeriodicalPage().PeriodicalForMod(cata)  # 修改期刊功能验证
-    # PeriodicalPage().PeriodicalForDel(cata)  # 删除期刊功能验证
+    qikan = PeriodicalPage('hoxx', '123456')
+    qikan.PeriodicalForQuery()  # 期刊书目列表功能验证
+    cata = qikan.PeriodicalForAdd()  # 新增期刊功能验证
+    qikan.PeriodicalForMod(cata)  # 修改期刊功能验证
+    qikan.PeriodicalForDel(cata)  # 删除期刊功能验证

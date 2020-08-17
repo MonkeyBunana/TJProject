@@ -3,12 +3,12 @@ from Utils.RequestsUtils import RequestsPage
 from Utils.ElibUtils import ElibPage
 import json
 
-class CataloguedPage(ElibPage):
+class CataloguedPage:
+
 
     def __init__(self, loginName, loginPwd):
-        # super().__init__('hoxx', '123456')
-        super().__init__(loginName, loginPwd)
         self.rp = RequestsPage()
+        self.ep = ElibPage(loginName, loginPwd)
 
     def CataloguedForQuery(self):
         """
@@ -23,11 +23,15 @@ class CataloguedPage(ElibPage):
             'userType': 1,
             'dateType': 1
         }).json()
-        if res['message'] == '操作成功':
-            print("编目管理书目列表查询成功")
-            # pass
+        print(res)
+        if 'message' in res:
+            if res['message'] == '操作成功':
+                print("编目管理书目列表查询成功")
+                # pass
+            else:
+                print("编目管理书目列表查询出错")
         else:
-            print("编目管理书目列表查询出错")
+            print("编目管理书目列表查询出错", res)
 
     def CataloguedForAdd(self):
         """
@@ -35,7 +39,7 @@ class CataloguedPage(ElibPage):
         :return: marctyid  书目编号，定位要编目的书目记录
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": self.ep.getFblxid(),
+                "marcfbid": self.ep.getFblxid(isMore=False),
                 "simpleList": [
                     {"fieldName": "分类号", "marcField": "690a", "content": "EC-7", "isEmpty": 1, "sort": 1},
                     {"fieldName": "并列正题名", "marcField": "510a", "content": "", "isEmpty": 1, "sort": 2},
@@ -43,12 +47,12 @@ class CataloguedPage(ElibPage):
                     {"fieldName": "国内订购号", "marcField": "092b", "content": "", "isEmpty": 1, "sort": 4},
                     {"fieldName": "语种", "marcField": "101a", "content": "", "isEmpty": 1, "sort": 5},
                     {"fieldName": "期刊价格", "marcField": "011d", "content": "", "isEmpty": 1, "sort": 6},
-                    {"fieldName": "ISBN", "marcField": "010a", "content": "501", "isEmpty": 0, "sort": 7},
+                    {"fieldName": "ISBN", "marcField": "010a", "content": "508", "isEmpty": 0, "sort": 7},
                     {"fieldName": "责任者拼音", "marcField": "7019", "content": "", "isEmpty": 1, "sort": 8},
                     {"fieldName": "副题名", "marcField": "200e", "content": "", "isEmpty": 1, "sort": 9},
                     {"fieldName": "价格", "marcField": "010d", "content": "", "isEmpty": 1, "sort": 10},
                     {"fieldName": "版次", "marcField": "205a", "content": "", "isEmpty": 1, "sort": 11},
-                    {"fieldName": "正题名", "marcField": "200a", "content": "501", "isEmpty": 0, "sort": 12},
+                    {"fieldName": "正题名", "marcField": "200a", "content": "这是正题名", "isEmpty": 0, "sort": 12},
                     {"fieldName": "出版地", "marcField": "210a", "content": "", "isEmpty": 1, "sort": 13},
                     {"fieldName": "其他责任者", "marcField": "200g", "content": "", "isEmpty": 1, "sort": 14},
                     {"fieldName": "页码", "marcField": "215a", "content": "", "isEmpty": 1, "sort": 15},
@@ -79,11 +83,14 @@ class CataloguedPage(ElibPage):
                 }
         res = self.rp.sendRequest('JSON', self.ep.getUrl() + '/service/api/e/catalog/catalogue/simple/save',
                                   json.dumps(data)).json()
-        if res['message'] == '操作成功!':
-            print("新增编目成功")
-            return res['data']['marctyid']
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("新增编目成功")
+                return res['data']['marctyid']
+            else:
+                print("新增编目出错")
         else:
-            print("新增编目出错")
+            print("新增编目出错", res)
 
     def CataloguedForMod(self, cata):
         """
@@ -92,7 +99,7 @@ class CataloguedPage(ElibPage):
         :return: None
         """
         data = {"userToken": self.ep.getUserToken(),
-                "marcfbid": self.ep.getFblxid(),
+                "marcfbid": self.ep.getFblxid(isMore=False),
                 "marctyid": cata,
                 "simpleList": [
                     {"fieldName": "分类号", "marcField": "690a", "content": "EC-7", "isEmpty": 1, "sort": 1},
@@ -137,10 +144,13 @@ class CataloguedPage(ElibPage):
                 }
         res = self.rp.sendRequest('JSON', self.ep.getUrl() + '/service/api/e/catalog/catalogue/simple/save',
                                   json.dumps(data)).json()
-        if res['message'] == '操作成功!':
-            print("修改编目成功")
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("修改编目成功")
+            else:
+                print("修改编目出错")
         else:
-            print("修改编目出错")
+            print("修改编目出错", res)
 
     def CataloguedForDel(self, cata):
         """
@@ -152,15 +162,18 @@ class CataloguedPage(ElibPage):
             'userToken': self.ep.getUserToken(),
             'marctyIds': cata
         }).json()
-        if res['message'] == '操作成功！':
-            print("删除编目成功")
-            # pass
+        if 'message' in res:
+            if res['message'] == '操作成功!':
+                print("删除编目成功")
+            else:
+                print("删除编目出错")
         else:
-            print("删除编目成功")
+            print("删除编目出错", res)
 
 
 if __name__ == '__main__':
-    CataloguedPage().CataloguedForQuery()  # 编目管理书目列表功能验证
-    cata = CataloguedPage().CataloguedForAdd()  # 新增编目管理书目功能验证
-    CataloguedPage().CataloguedForMod(cata)  # 修改编目管理书目功能验证
-    # CataloguedPage().CataloguedForDel(cata)  # 删除编目管理书目功能验证
+    bianmu = CataloguedPage('hoxx', '123456')
+    bianmu.CataloguedForQuery()  # 编目管理书目列表功能验证
+    cata = bianmu.CataloguedForAdd()  # 新增编目管理书目功能验证
+    bianmu.CataloguedForMod(cata)  # 修改编目管理书目功能验证
+    bianmu.CataloguedForDel(cata)  # 删除编目管理书目功能验证

@@ -23,7 +23,7 @@ class LoginVerifyPage:
             self.pool.apply_async(self.logincheck(str(i['用户名']), str(i['密码']), str(i['成员馆'])))
         self.pool.close()
         self.pool.join()
-        print(f"time: {time.time() - start}")       # 输出所用的时间
+        print(f"time: {round(time.time() - start, 3)}")       # 输出所用的时间
 
     def logincheck(self, zh, mm, g):
         res = ElibPage(zh, mm).msg
