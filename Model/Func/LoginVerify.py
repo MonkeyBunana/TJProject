@@ -29,7 +29,7 @@ class LoginVerifyPage:
         res = ElibPage(zh, mm).msg
         if res['message'] == '操作成功':
             if res['data']['user']['libName'] == g:
-                print(g + " 的账户：" + res['data']['user']['username'] + " 登录成功")
+                print(g + " 的账户：" + zh + res['data']['user']['username'] + " 登录成功")
                 return "登录成功"
             else:
                 print("用户登录的成员馆：" + res['data']['user']['libName'] + " 和excel中的成员馆：" + g + " 不符")
