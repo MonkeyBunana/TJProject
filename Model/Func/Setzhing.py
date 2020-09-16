@@ -149,5 +149,3 @@ if __name__ == '__main__':
     dcygname_data = shushang.BookmanForFoundcygname()
     shushang.BookmanForMod(gysId_data, dcygname_data)
     # shushang.BookmanForDel(gysId_data)
-
-
