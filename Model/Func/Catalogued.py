@@ -172,7 +172,6 @@ class CataloguedPage:
 
 
 if __name__ == '__main__':
-    # bianmu = CataloguedPage('hoxx', '123456')
     bianmu = CataloguedPage('pydhzxx', 'abcd1234')
     bianmu.CataloguedForQuery()  # 编目管理书目列表功能验证
     cata = bianmu.CataloguedForAdd()  # 新增编目管理书目功能验证
