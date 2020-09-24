@@ -174,8 +174,9 @@ class PeriodicalPage:
 
 
 if __name__ == '__main__':
-    qikan = PeriodicalPage('hoxx', '123456')
+    qikan = PeriodicalPage('pydhzxx', 'abcd1234')
+    # qikan = PeriodicalPage('hoxx', '123456')
     qikan.PeriodicalForQuery()  # 期刊书目列表功能验证
     cata = qikan.PeriodicalForAdd()  # 新增期刊功能验证
     qikan.PeriodicalForMod(cata)  # 修改期刊功能验证
-    qikan.PeriodicalForDel(cata)  # 删除期刊功能验证
+    # qikan.PeriodicalForDel(cata)  # 删除期刊功能验证
