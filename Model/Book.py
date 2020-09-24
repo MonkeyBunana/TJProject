@@ -8,7 +8,7 @@ class Book:
 
     def __init__(self):
         self.rp = RequestsPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage('YZ', 'Td123456')
         self.slp = DBPage('book')
 
     def copyBooks(self, num):
@@ -32,23 +32,29 @@ class Book:
         }).json()
         # 循环 requests 返回的书目信息，处理数据
         for dataList in res_1['data']['dataList']:
-            # 处理返回值，获取 著者 字段
-            fl = self.rp.matchString(dataList['fieldList'])
-            # 处理没有 著者 字段的图书，返回一个空值
-            if len(fl) == 0:
-                fl = ['']
+            bookDefault = self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/book/bookDefault', {
+                'userToken': self.ep.getUserToken(),
+                'marctyId': dataList['marctyid']
+            }).json()
+            # print(bookDefault)
+            # # 处理返回值，获取 著者 字段
+            # fl = self.rp.matchString(dataList['fieldList'])
+            # # 处理没有 著者 字段的图书，返回一个空值
+            # if len(fl) == 0:
+            #     fl = ['']
             # 添加信息到 list 中
             l.append((
                 dataList['ztming'],
                 dataList['zrsming'],
                 dataList['isbn'],
                 dataList['cbzhe'],
-                fl[0],
+                bookDefault['data']['author'],
                 dataList['flhao'],
                 0,
                 0,
                 0
             ))
+
             # 循环值，判断什么时候跳出while循环
             loopValue = 0
             while True:
@@ -58,23 +64,27 @@ class Book:
                 count += 1
                 # 发送 requests 请求，给每本书一条条添加馆藏
                 self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/book/save', {
-                    'ztai': '在馆',
-                    'tiaoma': 'TJ'+str(count).zfill(5),
-                    'bookCodes': 'TJ'+str(count).zfill(5),
-                    'sshao': dataList['flhao']+'/1',
-                    'gysid': self.ep.getGysid(),
-                    'batchid': self.rp.randomValue(self.ep.getBatchid()),
-                    'ltlxid': self.ep.getLtlxid(),
-                    'cygid1': self.ep.getLibid(),
-                    'cygid0': self.ep.getLibid(),
-                    'ysuanid': self.ep.getYslxid(),
-                    'marctyId': dataList['marctyid'],
-                    'cejia': self.rp.matchNumber(dataList['jge']),
-                    'taojia': self.rp.matchNumber(dataList['jge']),
                     'userToken': self.ep.getUserToken(),
-                    'czid0': self.rp.randomValue(self.ep.getCzid()),
-                    'czid1': self.rp.randomValue(self.ep.getCzid()),
+                    'ztai': bookDefault['data']['bookDeault']['ztai'],
+                    'tiaoma': 'YZ'+str(count).zfill(5),
+                    'bookCodes': 'YZ'+str(count).zfill(5),
+                    'sshao': bookDefault['data']['sshao'],
+                    'gysid': self.ep.getGysid(isMore=False),
+                    'batchid': self.rp.randomValue(self.ep.getBatchid()),
+                    'ltlxid': self.ep.getLtlxid(isMore=False),
+                    'cygid1': bookDefault['data']['bookDeault']['cygid1'],
+                    'cygid0': bookDefault['data']['bookDeault']['cygid0'],
+                    'ysuanid': self.ep.getYsid(isMore=False),
+                    'marctyId': dataList['marctyid'],
+                    'cejia': bookDefault['data']['bookDeault']['cejia'],
+                    'taojia': bookDefault['data']['bookDeault']['taojia'],
+                    'czid0': self.ep.getCzid(isMore=False),
+                    'czid1': self.ep.getCzid(isMore=False),
                     'bookNum': 1,
+                    'flhao': bookDefault['data']['fzqfhDTO']['flhao'],
+                    'zchao': bookDefault['data']['fzqfhDTO']['zchao'],
+                    'ljf': bookDefault['data']['fzqfhDTO']['ljf'],
+                    'fzqfh': bookDefault['data']['fzqfhDTO']['fzqfh'],
                     'purchasePrice': '',
                     'purchaseDiscount': '',
                     'jcmshu': '',
@@ -117,7 +127,7 @@ class Book:
             temp_bro = temp_bro | self.rp.modifyTuples(tup_2)
             while True:
                 # 获取随机图书条码
-                randomValue = 'TJ' + str(random.randint(1, 1000)).zfill(5)
+                randomValue = 'YZ' + str(random.randint(1, 1000)).zfill(5)
                 # 对比图书条码是否已在数据库中存在，存在就不发送借书请求
                 if randomValue in checkDoubleValue:
                     print('获取随机图书已重复')
@@ -388,7 +398,7 @@ class Book:
             self.rp.sendRequest('POST', self.ep.getUrl() + '/service/api/e/flow/doclx/ret', {
                 'userToken': self.ep.getUserToken(),
                 'isSameCz': '1',
-                'bookBarcode': 'TJ' + str(n).zfill(5)
+                'bookBarcode': 'YZ' + str(n).zfill(5)
             })
 
     def clearBooks(self):
@@ -434,8 +444,8 @@ class Book:
 if __name__ == '__main__':
     # Book().copyBooks(100)
     # Book().allReturnBooks()
-    Book().renewBooks()
+    # Book().renewBooks()
     # Book().borrowBooks()
-    # Book().returnBooks()
+    Book().returnBooks()
     # Book().total()
     # Book().clearBooks()

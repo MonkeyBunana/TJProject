@@ -18,8 +18,8 @@ class ElibPage(object):
 
     def __init__(self, loginName, loginPwd, isAes='yes'):
         self.rp = RequestsPage()
-        # self.baseUrl = 'http://192.168.1.47:8080'
-        self.baseUrl = 'http://tsgl.geiec.cn'
+        self.baseUrl = 'http://192.168.1.47:8081'
+        # self.baseUrl = 'http://tsgl.geiec.cn'
         self.msg = self.getLoginMsg(loginName, loginPwd, isAes)
 
     def getUrl(self):
@@ -41,6 +41,7 @@ class ElibPage(object):
         获取 token
         :return: String
         """
+        # print(self.msg)
         return self.msg['data']['userToken']
 
     def getLibid(self):
@@ -489,4 +490,4 @@ class ElibPage(object):
 
 
 if __name__ == '__main__':
-    print(ElibPage('TJ', 'Td123456').getHbList(isMore=True))
+    print(ElibPage('YZ', 'Td123456').getLibid())

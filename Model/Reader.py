@@ -8,7 +8,7 @@ class Reader:
     def __init__(self):
         self.rp = RequestsPage()
         # self.rpp = ReadPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage('YZ', 'Td123456')
         self.slp = DBPage('book')
 
     def addReader(self):
@@ -33,9 +33,9 @@ class Reader:
                 "xming": n,       # 姓名
                 "ztai": "正常",       # 状态
                 "mima": "123456",       # 密码
-                "dzlxid": self.ep.getDzlxid(),       # 读者类型
-                "jzrqi": "2020-07-31",      # 截止日期
-                "qyrqi": "2020-07-08",      # 启用日期
+                "dzlxid": self.ep.getDzlxid(isMore=False),       # 读者类型
+                "jzrqi": self.rp.nowTime(ty='end'),      # 截止日期
+                "qyrqi": self.rp.nowTime(ty='now'),      # 启用日期
                 "libid": self.ep.getLibid(),        # 馆id
                 "smrz": "0",
                 "zhuanye": "其他",

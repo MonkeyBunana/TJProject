@@ -14,7 +14,7 @@ class LTTest(unittest.TestCase):
         self.reader = Reader()
         self.db = DBPage('book')
         self.rp = RequestsPage()
-        self.ep = ElibPage('TJ', '6Tet8CNiT2soE8BiYcXR%2FA%3D%3D')
+        self.ep = ElibPage('YZ', 'Td123456')
 
     def test_lttj_default(self):
         """ 流通-流通统计

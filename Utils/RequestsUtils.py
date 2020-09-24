@@ -126,7 +126,13 @@ class RequestsPage:
         if ty == 'start':
             return today.replace(month=1, day=1)
         elif ty == 'end':
-            return today + datetime.timedelta(days=1)
+            return today + datetime.timedelta(days=30)
+        elif ty == 'week':
+            return today - datetime.timedelta(days=7)
+        elif ty == 'first':
+            return today.replace(year=2000, month=1, day=1)
+        elif ty == 'one':
+            return today.replace(day=1)
         else:
             return today
 
@@ -166,6 +172,9 @@ class RequestsPage:
 
 if __name__ == '__main__':
     print(RequestsPage().nowTime())
+    print(RequestsPage().nowTime(ty='start'))
+    print(RequestsPage().nowTime(ty='end'))
+    print(RequestsPage().nowTime(ty='month'))
     # a = ("adad", "asdad", "ssfg", "asfhsof")
     # print(RequestsPage().randomValue(a))
     # RequestsPage().modifyTuples((123, 'DZ04234', "{'TJ00591', 'TJ00432', 'TJ00002', 'TJ00009', 'TJ00311', 'TJ00571', 'TJ00275', 'TJ00558', 'TJ00447', 'TJ00243', 'TJ00096'}"))
