@@ -142,7 +142,7 @@ class SetzhingPage:
 
 
 if __name__ == '__main__':
-    shushang = SetzhingPage('hoxx', '123456')
+    shushang = SetzhingPage('TDJay', 'Td123456')
     shushang.BookmanForQuery()
     shushang.BookmanForAdd()
     gysId_data = shushang.BookmanForFoundgysId()

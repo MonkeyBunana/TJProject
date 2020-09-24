@@ -18,8 +18,7 @@ class ElibPage(object):
 
     def __init__(self, loginName, loginPwd, isAes='yes'):
         self.rp = RequestsPage()
-        # self.baseUrl = 'http://192.168.1.47:8080'
-        self.baseUrl = 'http://tsgl.geiec.cn'
+        self.baseUrl = 'http://192.168.1.47:8088'  # 8088测试华侨
         self.msg = self.getLoginMsg(loginName, loginPwd, isAes)
 
     def getUrl(self):
